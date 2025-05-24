@@ -1,0 +1,38 @@
+﻿@model BeautySalon.PresentationMVC.ViewModel.KlijentTerminiViewModel
+
+<h2>Detalji Klijenta</h2>
+
+<div>
+    <h3>@Model.Klijent.Ime @Model.Klijent.Prezime</h3>
+    <p>Email: @Model.Klijent.Email</p>
+    <p>Broj telefona: @Model.Klijent.BrojTelefona</p>
+    <p>Broj bodova: @Model.Klijent.BrojBodova</p>
+</div>
+
+<h4>Termini</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Datum i Vrijeme</th>
+            <th>Zaposlenik</th>
+            <th>Status</th>
+            <th>Akcije</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var termin in Model.Termini)
+        {
+            <tr>
+                <td>@termin.DatumVrijeme</td>
+                <td>@termin.ZaposlenikId</td> <!-- Možeš prikazati ime zaposlenika ako želiš -->
+                <td>@termin.Status</td>
+                <td>
+                    <a asp-action="UrediTermin" asp-route-id="@termin.TerminId">Uredi</a> |
+                    <a asp-action="ObrisiTermin" asp-route-id="@termin.TerminId" asp-route-klijentId="@Model.Klijent.KorisnikId">Obriši</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="NoviTermin" asp-route-klijentId="@Model.Klijent.KorisnikId" class="btn btn-primary">Novi termin</a>

@@ -1,6 +1,10 @@
 using BeautySalon.PresentationMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using BeautySalon.Domain.Models;
+using BeautySalon.Application.DTOs;
+using BeautySalon.Application.Interfaces;
+
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
