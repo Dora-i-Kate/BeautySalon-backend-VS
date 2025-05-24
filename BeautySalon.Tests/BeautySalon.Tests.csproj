@@ -20,7 +20,6 @@
     <ProjectReference Include="..\BeautySalon.Application\BeautySalon.Application.csproj" />
     <ProjectReference Include="..\BeautySalon.DataAccess\BeautySalon.DataAccess.csproj" />
     <ProjectReference Include="..\BeautySalon.Domain\BeautySalon.Domain.csproj" />
-    <ProjectReference Include="..\BeautySalon.Presentation\BeautySalon.Presentation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
