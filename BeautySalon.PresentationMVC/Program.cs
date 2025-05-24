@@ -13,6 +13,7 @@ builder.Services.AddDbContext<SalonDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUslugaService, UslugaService>();
+builder.Services.AddScoped<IMaterijalService, MaterijalService>();
 
 
 var app = builder.Build();
@@ -40,5 +41,10 @@ app.MapControllerRoute(
     name: "sifrarnik-usluga",
     pattern: "sifrarnik-usluga",
     defaults: new { controller = "Usluge", action = "Index" });
+
+app.MapControllerRoute(
+    name: "sifrarnik-materijala",
+    pattern: "sifrarnik-materijala",
+    defaults: new { controller = "Materijali", action = "Index" });
 
 app.Run();

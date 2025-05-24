@@ -1,0 +1,32 @@
+﻿@model BeautySalon.PresentationMVC.Models.MaterijalViewModel
+
+@{
+    ViewData["Title"] = "Detalji materijala";
+}
+
+<h1>Detalji</h1>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Naziv</dt>
+        <dd class="col-sm-10">@Model.Naziv</dd>
+
+        <dt class="col-sm-2">Opis</dt>
+        <dd class="col-sm-10">@Model.MinimalnaKolicina kom</dd>
+
+        <dt class="col-sm-2">Trajanje</dt>
+        <dd class="col-sm-10">@Model.TrenutnaKolicina kom</dd>
+
+        <dt class="col-sm-2">Cijena</dt>
+        <dd class="col-sm-10">@Model.Cijena €</dd>
+
+        <dt class="col-sm-2">Jedinica mjere</dt>
+        <dd class="col-sm-10">@Model.JedinicaMjere</dd>
+
+        <dt class="col-sm-2">Vrsta materijala</dt>
+        <dd class="col-sm-10">@Model.VrstaNaziv</dd>
+    </dl>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.MaterijalId" class="btn btn-warning">Uredi</a>
+<a asp-action="Index" class="btn btn-secondary">Natrag</a>

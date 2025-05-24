@@ -1,0 +1,20 @@
+﻿@model BeautySalon.PresentationMVC.Models.MaterijalViewModel
+
+@{
+    ViewData["Title"] = "Brisanje materijala";
+}
+
+<h1>Brisanje</h1>
+
+<h3>Jeste li sigurni da želite obrisati ovaj materijal?</h3>
+<div>
+    <h4>@Model.Naziv</h4>
+    @* <p>@Model.Opis</p> *@
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="MaterijalId" />
+    <button type="submit" class="btn btn-danger">Obriši</button>
+    <a asp-action="Index" class="btn btn-secondary">Odustani</a>
+</form>
+

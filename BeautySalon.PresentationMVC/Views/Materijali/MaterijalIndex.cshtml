@@ -1,40 +1,41 @@
-﻿@model IEnumerable<BeautySalon.PresentationMVC.Models.UslugaViewModel>
+﻿@model IEnumerable<BeautySalon.PresentationMVC.Models.MaterijalViewModel>
 
 @{
-    ViewData["Title"] = "Popis usluga";
+    ViewData["Title"] = "Popis materijala";
 }
 
-<h1>Šifrarnik usluga</h1>
+<h1>Šifrarnik materijala</h1>
 
 <div>
-    <a asp-action="Create" class="btn btn-primary">Dodaj novu uslugu</a>
+    <a asp-action="Create" class="btn btn-primary">Dodaj novi materijal</a>
     <button id="editBtn" disabled class="btn btn-primary">Uredi</button>
     <button id="detailsBtn" disabled class="btn btn-info">Detalji</button>
     <button id="deleteBtn" disabled class="btn btn-danger">Obriši</button>
 </div>
 
-<table class="table" id="uslugeTable">
+<table class="table" id="materijaliTable">
     <thead>
         <tr>
             <th>Šifra</th>
             <th>Naziv</th>
-            <th>Opis</th>
-            <th>Trajanje (min)</th>
+            <th>Minimalna količina</th>
+            <th>Trenutna količina</th>
             <th>Cijena (€)</th>
-            <th>Prikaz</th>
-            <th></th>
+            <th>Jedinica mjere</th>
+            <th>Vrsta</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            <tr data-id="@item.UslugaId" style="cursor:pointer;">
-                <td>@item.UslugaId</td>
+            <tr data-id="@item.MaterijalId" style="cursor:pointer;">
+                <td>@item.MaterijalId</td>
                 <td>@item.Naziv</td>
-                <td>@item.Opis</td>
-                <td>@item.Trajanje</td>
+                <td>@item.MinimalnaKolicina</td>
+                <td>@item.TrenutnaKolicina</td>
                 <td>@item.Cijena</td>
-                <td>@(item.Prikaz == null ? "N/A" : item.Prikaz)</td>
+                <td>@item.JedinicaMjere</td>
+                <td>@item.VrstaNaziv</td>
             </tr>
         }
     </tbody>
@@ -43,7 +44,7 @@
 <script>        
     let selectedId = null;
 
-    const rows = document.querySelectorAll('#uslugeTable tbody tr');
+    const rows = document.querySelectorAll('#materijaliTable tbody tr');
 
     rows.forEach(row => {
         row.addEventListener('click', () => {
@@ -59,20 +60,19 @@
 
     document.getElementById('editBtn').addEventListener('click', () => {
         if (selectedId) {
-            window.location.href = `/Usluge/Edit/${selectedId}`;
+            window.location.href = `/Materijali/Edit/${selectedId}`;
         }
     });
 
     document.getElementById('detailsBtn').addEventListener('click', () => {
         if (selectedId) {
-            window.location.href = `/Usluge/Details/${selectedId}`;
+            window.location.href = `/Materijali/Details/${selectedId}`;
         }
     });
 
     document.getElementById('deleteBtn').addEventListener('click', () => {
         if (selectedId) {
-            // Umjesto confirm, odmah navigiramo na stranicu za potvrdu brisanja
-            window.location.href = `/Usluge/Delete/${selectedId}`;
+            window.location.href = `/Materijali/Delete/${selectedId}`;
         }
     });
 </script>

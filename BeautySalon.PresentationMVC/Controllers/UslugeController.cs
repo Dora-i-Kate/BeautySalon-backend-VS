@@ -20,7 +20,7 @@ namespace BeautySalon.PresentationMVC.Controllers
         {
             var usluge = await _service.GetAllAsync();
             var viewModels = usluge.Select(MapToViewModel).ToList();
-            return View(viewModels);
+            return View("UslugaIndex", viewModels);
         }
 
         public async Task<IActionResult> Details(int id)
