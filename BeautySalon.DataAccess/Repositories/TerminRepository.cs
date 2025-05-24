@@ -17,11 +17,13 @@ namespace BeautySalon.DataAccess.Repositories
         public void Add(Termin termin)
         {
             _context.Termini.Add(termin);
+            _context.SaveChanges();
         }
 
         public void Update(Termin termin)
         {
             _context.Termini.Update(termin);
+            _context.SaveChanges();
         }
 
         public void Delete(int id)
