@@ -56,7 +56,7 @@ namespace BeautySalon.Application.Services
             };
 
             _terminRepository.Add(entity);
-            _terminRepository.Save();
+            //_terminRepository.Save();
         }
 
         public void Update(TerminDto termin)
@@ -71,7 +71,7 @@ namespace BeautySalon.Application.Services
             entity.KomentarZaposlenika = termin.KomentarZaposlenika;
 
             _terminRepository.Update(entity);
-            _terminRepository.Save();
+            //_terminRepository.Save();
         }
 
 
