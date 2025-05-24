@@ -6,4 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BeautySalon.Application\BeautySalon.Application.csproj" />
+    <ProjectReference Include="..\BeautySalon.DataAccess\BeautySalon.DataAccess.csproj" />
+    <ProjectReference Include="..\BeautySalon.Domain\BeautySalon.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

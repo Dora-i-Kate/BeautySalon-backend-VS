@@ -1,0 +1,79 @@
+﻿@model IEnumerable<BeautySalon.PresentationMVC.Models.UslugaViewModel>
+
+@{
+    ViewData["Title"] = "Popis usluga";
+}
+
+<h1>Šifrarnik usluga</h1>
+
+<div>
+    <a asp-action="Create" class="btn btn-primary">Dodaj novu uslugu</a>
+    <button id="editBtn" disabled class="btn btn-primary">Uredi</button>
+    <button id="detailsBtn" disabled class="btn btn-info">Detalji</button>
+    <button id="deleteBtn" disabled class="btn btn-danger">Obriši</button>
+</div>
+
+<table class="table" id="uslugeTable">
+    <thead>
+        <tr>
+            <th>Šifra</th>
+            <th>Naziv</th>
+            <th>Opis</th>
+            <th>Trajanje (min)</th>
+            <th>Cijena (€)</th>
+            <th>Prikaz</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr data-id="@item.UslugaId" style="cursor:pointer;">
+                <td>@item.UslugaId</td>
+                <td>@item.Naziv</td>
+                <td>@item.Opis</td>
+                <td>@item.Trajanje</td>
+                <td>@item.Cijena</td>
+                <td>@(item.Prikaz == null ? "N/A" : item.Prikaz)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>        
+    let selectedId = null;
+
+    const rows = document.querySelectorAll('#uslugeTable tbody tr');
+
+    rows.forEach(row => {
+        row.addEventListener('click', () => {
+            rows.forEach(r => r.style.backgroundColor = '');
+            row.style.backgroundColor = '#d3d3d3';
+            selectedId = row.getAttribute('data-id');
+
+            document.getElementById('editBtn').disabled = false;
+            document.getElementById('detailsBtn').disabled = false;
+            document.getElementById('deleteBtn').disabled = false;
+        });
+    });
+
+    document.getElementById('editBtn').addEventListener('click', () => {
+        if (selectedId) {
+            window.location.href = `/Usluge/Edit/${selectedId}`;
+        }
+    });
+
+    document.getElementById('detailsBtn').addEventListener('click', () => {
+        if (selectedId) {
+            window.location.href = `/Usluge/Details/${selectedId}`;
+        }
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', () => {
+        if (selectedId) {
+            // Umjesto confirm, odmah navigiramo na stranicu za potvrdu brisanja
+            window.location.href = `/Usluge/Delete/${selectedId}`;
+        }
+    });
+</script>
+

@@ -1,7 +1,19 @@
+using BeautySalon.Application.Interfaces;
+using BeautySalon.Application.Services;
+using BeautySalon.DataAccess.DbContexts;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+
+builder.Services.AddDbContext<SalonDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUslugaService, UslugaService>();
+
 
 var app = builder.Build();
 
@@ -23,5 +35,10 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "sifrarnik-usluga",
+    pattern: "sifrarnik-usluga",
+    defaults: new { controller = "Usluge", action = "Index" });
 
 app.Run();

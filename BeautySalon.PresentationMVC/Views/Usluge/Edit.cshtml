@@ -1,0 +1,35 @@
+﻿@model BeautySalon.PresentationMVC.Models.UslugaViewModel
+
+@{
+    ViewData["Title"] = "Uredi uslugu";
+}
+
+<h1>Uredi uslugu</h1>
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="UslugaId" />
+    <div class="form-group">
+        <label asp-for="Naziv"></label>
+        <input asp-for="Naziv" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Opis"></label>
+        <textarea asp-for="Opis" class="form-control"></textarea>
+    </div>
+    <div class="form-group">
+        <label asp-for="Trajanje"></label>
+        <input asp-for="Trajanje" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Cijena"></label>
+        <input asp-for="Cijena" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Prikaz"></label>
+        <input asp-for="Prikaz" class="form-control" />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Spremi promjene</button>
+    <a asp-action="Index" class="btn btn-secondary">Odustani</a>
+</form>
+
