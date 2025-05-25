@@ -1,9 +1,9 @@
-﻿using BeautySalon.Application.DTOs.Usluga;
+using BeautySalon.Application.DTOs.Usluga;
 using BeautySalon.Application.Interfaces;
 using BeautySalon.Domain.Exceptions;
 using BeautySalon.PresentationMVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq; // Potrebno za LINQ metode
+using System.Linq;
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
@@ -22,12 +22,11 @@ namespace BeautySalon.PresentationMVC.Controllers
             var usluge = await _uslugaAppService.SearchUslugeAsync(searchTerm);
             var viewModels = usluge.Select(u => new UslugaViewModel
             {
-                // Mapiranje na temelju tvojih stvarnih DTO/ViewModel propertyja
-                Id = u.Id, // Korišteno 'Id' iz DTO-a
+                Id = u.Id,
                 Naziv = u.Naziv,
                 Opis = u.Opis,
                 Cijena = u.Cijena,
-                TrajanjeMinuta = u.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz DTO-a
+                TrajanjeMinuta = u.TrajanjeMinuta
             }).ToList();
 
             ViewBag.SearchTerm = searchTerm;
@@ -42,12 +41,11 @@ namespace BeautySalon.PresentationMVC.Controllers
 
             var viewModel = new UslugaViewModel
             {
-                // Mapiranje na temelju tvojih stvarnih DTO/ViewModel propertyja
-                Id = usluga.Id, // Korišteno 'Id' iz DTO-a
+                Id = usluga.Id,
                 Naziv = usluga.Naziv,
                 Opis = usluga.Opis,
                 Cijena = usluga.Cijena,
-                TrajanjeMinuta = usluga.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz DTO-a
+                TrajanjeMinuta = usluga.TrajanjeMinuta
             };
             return View(viewModel);
         }
@@ -55,7 +53,7 @@ namespace BeautySalon.PresentationMVC.Controllers
         // GET: Usluge/Create
         public IActionResult Create()
         {
-            return View("Edit", new UslugaViewModel()); // Koristi isti Edit view za Create
+            return View("Edit", new UslugaViewModel());
         }
 
         // POST: Usluge/Create
@@ -68,18 +66,17 @@ namespace BeautySalon.PresentationMVC.Controllers
                 return View("Edit", viewModel);
             }
 
-            // Kreiramo CreateUslugaDto iz ViewModela s ISPRAVNIM nazivima propertyja
             var createDto = new CreateUslugaDto
             {
                 Naziv = viewModel.Naziv,
                 Opis = viewModel.Opis,
                 Cijena = viewModel.Cijena,
-                TrajanjeMinuta = viewModel.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz ViewModela
+                TrajanjeMinuta = viewModel.TrajanjeMinuta
             };
 
             try
             {
-                await _uslugaAppService.CreateUslugaAsync(createDto); // Prosljeđujemo CreateUslugaDto
+                await _uslugaAppService.CreateUslugaAsync(createDto);
                 TempData["SuccessMessage"] = "Usluga je uspješno kreirana!";
                 return RedirectToAction(nameof(Index));
             }
@@ -112,12 +109,11 @@ namespace BeautySalon.PresentationMVC.Controllers
 
             var viewModel = new UslugaViewModel
             {
-                // Mapiranje na temelju tvojih stvarnih DTO/ViewModel propertyja
-                Id = uslugaDto.Id, // Korišteno 'Id' iz DTO-a
+                Id = uslugaDto.Id,
                 Naziv = uslugaDto.Naziv,
                 Opis = uslugaDto.Opis,
                 Cijena = uslugaDto.Cijena,
-                TrajanjeMinuta = uslugaDto.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz DTO-a
+                TrajanjeMinuta = uslugaDto.TrajanjeMinuta
             };
             return View(viewModel);
         }
@@ -127,7 +123,7 @@ namespace BeautySalon.PresentationMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, UslugaViewModel viewModel)
         {
-            if (id != viewModel.Id) // Usporedba s 'Id' iz ViewModela
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
@@ -137,19 +133,18 @@ namespace BeautySalon.PresentationMVC.Controllers
                 return View(viewModel);
             }
 
-            // Kreiramo UpdateUslugaDto iz ViewModela s ISPRAVNIM nazivima propertyja
             var updateDto = new UpdateUslugaDto
             {
-                Id = viewModel.Id, // Korišteno 'Id' iz ViewModela
+                Id = viewModel.Id,
                 Naziv = viewModel.Naziv,
                 Opis = viewModel.Opis,
                 Cijena = viewModel.Cijena,
-                TrajanjeMinuta = viewModel.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz ViewModela
+                TrajanjeMinuta = viewModel.TrajanjeMinuta
             };
 
             try
             {
-                await _uslugaAppService.UpdateUslugaAsync(updateDto); // Prosljeđujemo UpdateUslugaDto
+                await _uslugaAppService.UpdateUslugaAsync(updateDto);
                 TempData["SuccessMessage"] = "Usluga je uspješno ažurirana!";
                 return RedirectToAction(nameof(Index));
             }
@@ -176,41 +171,3 @@ namespace BeautySalon.PresentationMVC.Controllers
         }
 
         // POST: Usluge/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            try
-            {
-                await _uslugaAppService.DeleteUslugaAsync(id);
-                TempData["SuccessMessage"] = "Usluga je uspješno obrisana!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Došlo je do pogreške prilikom brisanja usluge: {ex.Message}";
-                return RedirectToAction(nameof(Index));
-            }
-        }
-
-        /// <summary>
-        /// Dohvaća cijenu usluge po ID-u. Koristi se za AJAX pozive u JavaScriptu na stranici termina.
-        /// </summary>
-        /// <param name="id">ID usluge.</param>
-        /// <returns>JSON objekt s cijenom usluge.</returns>
-        [HttpGet]
-        public async Task<IActionResult> GetUslugaPrice(int id)
-        {
-            var usluga = await _uslugaAppService.GetUslugaByIdAsync(id);
-            if (usluga == null)
-            {
-                return NotFound();
-            }
-            return Json(new { cijena = usluga.Cijena });
-        }
-    }
-}
