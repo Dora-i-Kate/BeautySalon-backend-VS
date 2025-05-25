@@ -15,5 +15,6 @@ namespace BeautySalon.Application.Interfaces
         Task CreateAsync(MaterijalDto materijal);
         Task UpdateAsync(MaterijalDto materijal);
         Task DeleteAsync(int id);
+        Task<List<VrstaMaterijalaDto>> GetAllVrsteMaterijalaAsync();
     }
 }

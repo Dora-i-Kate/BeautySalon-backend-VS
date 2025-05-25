@@ -12,33 +12,26 @@ namespace BeautySalon.PresentationMVC.Controllers
     public class MaterijaliController : Controller
     {
         private readonly IMaterijalService _service;
-        private readonly SalonDbContext _context;
 
-        public MaterijaliController(IMaterijalService service, SalonDbContext context)
+        public MaterijaliController(IMaterijalService service)
         {
             _service = service;
-            _context = context;
         }
 
-        public async Task<IActionResult> Index(string search)
+        public async Task<IActionResult> Index(string searchTerm)
         {
             var materijali = await _service.GetAllAsync();
+            var filtered = string.IsNullOrWhiteSpace(searchTerm) ? materijali : materijali.Where(m =>
+                (!string.IsNullOrEmpty(m.Naziv) && m.Naziv.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(m.JedinicaMjere) && m.JedinicaMjere.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(m.VrstaNaziv) && m.VrstaNaziv.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
 
-            if (!string.IsNullOrEmpty(search))
-                materijali = materijali
-                    .Where(m => m.Naziv.Contains(search, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-            var viewModel = materijali.Select(m => new MaterijalViewModel
+            var viewModel = new MaterijalSearchViewModel
             {
-                MaterijalId = m.MaterijalId,
-                Naziv = m.Naziv,
-                Cijena = m.Cijena,
-                MinimalnaKolicina = m.MinimalnaKolicina,
-                TrenutnaKolicina = m.TrenutnaKolicina,
-                JedinicaMjere = m.JedinicaMjere,
-                VrstaNaziv = m.VrstaNaziv
-            }).ToList();
+                SearchTerm = searchTerm,
+                Materijali = filtered.Select(MapToViewModel).ToList()
+            };
 
             return View("MaterijalIndex", viewModel);
         }
@@ -61,11 +54,12 @@ namespace BeautySalon.PresentationMVC.Controllers
             });
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var vrste = await _service.GetAllVrsteMaterijalaAsync();
             var model = new MaterijalViewModel
             {
-                VrsteMaterijala = new SelectList(_context.VrstaMaterijala, "VrstaId", "Naziv")
+                VrsteMaterijala = new SelectList(vrste, "VrstaId", "Naziv")
             };
             return View("MaterijalCreate", model);
         }
@@ -95,7 +89,8 @@ namespace BeautySalon.PresentationMVC.Controllers
                 }
             }
 
-            model.VrsteMaterijala = new SelectList(_context.VrstaMaterijala, "VrstaId", "Naziv", model.VrstaId);
+            var vrste = await _service.GetAllVrsteMaterijalaAsync();
+            model.VrsteMaterijala = new SelectList(vrste, "VrstaId", "Naziv", model.VrstaId);
             return View("MaterijalCreate", model);
         }
 
@@ -104,6 +99,7 @@ namespace BeautySalon.PresentationMVC.Controllers
             var m = await _service.GetByIdAsync(id);
             if (m == null) return NotFound();
 
+            var vrste = await _service.GetAllVrsteMaterijalaAsync();
             var model = new MaterijalViewModel
             {
                 MaterijalId = m.MaterijalId,
@@ -113,7 +109,7 @@ namespace BeautySalon.PresentationMVC.Controllers
                 TrenutnaKolicina = m.TrenutnaKolicina,
                 JedinicaMjere = m.JedinicaMjere,
                 VrstaId = m.VrstaId,
-                VrsteMaterijala = new SelectList(_context.VrstaMaterijala, "VrstaId", "Naziv", m.VrstaId)
+                VrsteMaterijala = new SelectList(vrste, "VrstaId", "Naziv", m.VrstaId)
             };
 
             return View("MaterijalEdit", model);
@@ -144,7 +140,8 @@ namespace BeautySalon.PresentationMVC.Controllers
                 }
             }
 
-            model.VrsteMaterijala = new SelectList(_context.VrstaMaterijala, "VrstaId", "Naziv", model.VrstaId);
+            var vrste = await _service.GetAllVrsteMaterijalaAsync();
+            model.VrsteMaterijala = new SelectList(vrste, "VrstaId", "Naziv", model.VrstaId);
             return View("MaterijalEdit", model);
         }
 
@@ -166,6 +163,19 @@ namespace BeautySalon.PresentationMVC.Controllers
             await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
+
+        private MaterijalViewModel MapToViewModel(MaterijalDto m) => new()
+        { 
+            MaterijalId = m.MaterijalId,
+            Naziv = m.Naziv,
+            Cijena = m.Cijena,
+            MinimalnaKolicina = m.MinimalnaKolicina,
+            TrenutnaKolicina = m.TrenutnaKolicina,
+            JedinicaMjere = m.JedinicaMjere,
+            VrstaId = m.VrstaId,
+            VrstaNaziv = m.VrstaNaziv
+        };
+        
     }
 
 }

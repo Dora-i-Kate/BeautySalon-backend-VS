@@ -1,45 +1,66 @@
-﻿@model IEnumerable<BeautySalon.PresentationMVC.Models.MaterijalViewModel>
+﻿@model BeautySalon.PresentationMVC.Models.MaterijalSearchViewModel
 
 @{
     ViewData["Title"] = "Popis materijala";
 }
 
-<h1>Šifrarnik materijala</h1>
+<h1 style="margin-bottom:30px;">Šifrarnik materijala</h1>
 
-<div>
-    <a asp-action="Create" class="btn btn-primary">Dodaj novi materijal</a>
-    <button id="editBtn" disabled class="btn btn-primary">Uredi</button>
-    <button id="detailsBtn" disabled class="btn btn-info">Detalji</button>
-    <button id="deleteBtn" disabled class="btn btn-danger">Obriši</button>
+<div style="display:flex; justify-content:space-between; margin-bottom:30px">
+    <div>
+        <a asp-action="Create" class="btn btn-primary">Dodaj novi materijal</a>
+        <button id="editBtn" disabled class="btn btn-primary">Uredi</button>
+        <button id="detailsBtn" disabled class="btn btn-info">Detalji</button>
+        <button id="deleteBtn" disabled class="btn btn-danger">Obriši</button>
+    </div>
+    <form method="get" asp-action="Index" class="form-inline" style="display:flex; align-items:center; gap:5px;">
+        <input type="text" name="searchTerm" value="@Model.SearchTerm"
+               placeholder="Pretraži materijale..."
+               style="height:100%; border:1px solid lightgray; border-radius:5px; padding:0px 10px;" />
+        <button type="submit" class="btn btn-secondary">Pretraži</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Poništi</a>
+    </form>
 </div>
 
-<table class="table" id="materijaliTable">
-    <thead>
-        <tr>
-            <th>Šifra</th>
-            <th>Naziv</th>
-            <th>Minimalna količina</th>
-            <th>Trenutna količina</th>
-            <th>Cijena (€)</th>
-            <th>Jedinica mjere</th>
-            <th>Vrsta</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr data-id="@item.MaterijalId" style="cursor:pointer;">
-                <td>@item.MaterijalId</td>
-                <td>@item.Naziv</td>
-                <td>@item.MinimalnaKolicina</td>
-                <td>@item.TrenutnaKolicina</td>
-                <td>@item.Cijena</td>
-                <td>@item.JedinicaMjere</td>
-                <td>@item.VrstaNaziv</td>
+<div style="max-height: calc(100vh - 350px); overflow-y: auto;">
+    <table class="table" id="materijaliTable">
+        <thead>
+            <tr>
+                <th>Šifra</th>
+                <th>Naziv</th>
+                <th>Minimalna količina</th>
+                <th>Trenutna količina</th>
+                <th>Cijena (€)</th>
+                <th>Jedinica mjere</th>
+                <th>Vrsta</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Materijali)
+            {
+                <tr data-id="@item.MaterijalId" style="cursor:pointer;">
+                    <td>@item.MaterijalId</td>
+                    <td>@item.Naziv</td>
+                    <td>@item.MinimalnaKolicina</td>
+                    <td>@item.TrenutnaKolicina</td>
+                    <td>@item.Cijena</td>
+                    <td>@item.JedinicaMjere</td>
+                    <td>@item.VrstaNaziv</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    thead th {
+        position: sticky;
+        top: 0;
+        background-color: #dddddd !important;
+        z-index: 2;
+        opacity: 1 !important;
+    }
+</style>
 
 <script>        
     let selectedId = null;

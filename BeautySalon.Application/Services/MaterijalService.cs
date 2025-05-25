@@ -104,5 +104,16 @@ namespace BeautySalon.Application.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<VrstaMaterijalaDto>> GetAllVrsteMaterijalaAsync()
+        {
+            return await _context.VrstaMaterijala
+                .Select(v => new VrstaMaterijalaDto
+                {
+                    VrstaId = v.VrstaId,
+                    Naziv = v.Naziv
+                })
+                .ToListAsync();
+        }
     }
 }
