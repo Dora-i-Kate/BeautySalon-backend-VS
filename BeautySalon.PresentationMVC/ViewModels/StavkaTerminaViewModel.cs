@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Xunit.Sdk;
+
 
 namespace BeautySalon.PresentationMVC.ViewModels
 {
