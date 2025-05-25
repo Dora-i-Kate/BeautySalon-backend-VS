@@ -1,4 +1,5 @@
-﻿using System;
+﻿// BeautySalon.Domain.Models.Usluga.cs
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,13 +9,13 @@ namespace BeautySalon.Domain.Models
 {
     /// <summary>
     /// Reprezentira uslugu koju pruža kozmetički salon.
-    /// Entitet za šifrarnik.
+    /// Entitet za šifrarnik i korištenje u StavciTermina.
     /// </summary>
     public class Usluga
     {
-        public int Id { get; private set; } // usluga_id
+        public int Id { get; private set; } // usluga_id, primarni ključ
         public string Naziv { get; private set; } // naziv_usluge
-        public string Opis { get; private set; } // opis_usluge
+        public string? Opis { get; private set; } // opis_usluge, može biti null
         public decimal Cijena { get; private set; } // cijena
         public int TrajanjeMinuta { get; private set; } // trajanje u minutama
 
@@ -24,7 +25,7 @@ namespace BeautySalon.Domain.Models
         /// <summary>
         /// Konstruktor za stvaranje nove usluge.
         /// </summary>
-        public Usluga(string naziv, string opis, decimal cijena, int trajanjeMinuta)
+        public Usluga(string naziv, string? opis, decimal cijena, int trajanjeMinuta)
         {
             if (string.IsNullOrWhiteSpace(naziv)) throw new ArgumentException("Naziv usluge ne smije biti prazan.", nameof(naziv));
             if (cijena <= 0) throw new ArgumentException("Cijena usluge mora biti pozitivna.", nameof(cijena));
@@ -39,7 +40,7 @@ namespace BeautySalon.Domain.Models
         /// <summary>
         /// Ažurira podatke usluge.
         /// </summary>
-        public void Update(string naziv, string opis, decimal cijena, int trajanjeMinuta)
+        public void Update(string naziv, string? opis, decimal cijena, int trajanjeMinuta)
         {
             if (string.IsNullOrWhiteSpace(naziv)) throw new ArgumentException("Naziv usluge ne smije biti prazan.", nameof(naziv));
             if (cijena <= 0) throw new ArgumentException("Cijena usluge mora biti pozitivna.", nameof(cijena));

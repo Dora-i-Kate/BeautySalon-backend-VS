@@ -3,6 +3,7 @@ using BeautySalon.Application.Interfaces;
 using BeautySalon.Domain.Exceptions;
 using BeautySalon.PresentationMVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq; // Potrebno za LINQ metode
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
@@ -21,15 +22,34 @@ namespace BeautySalon.PresentationMVC.Controllers
             var usluge = await _uslugaAppService.SearchUslugeAsync(searchTerm);
             var viewModels = usluge.Select(u => new UslugaViewModel
             {
-                Id = u.Id,
+                // Mapiranje na temelju tvojih stvarnih DTO/ViewModel propertyja
+                Id = u.Id, // Korišteno 'Id' iz DTO-a
                 Naziv = u.Naziv,
                 Opis = u.Opis,
                 Cijena = u.Cijena,
-                TrajanjeMinuta = u.TrajanjeMinuta
+                TrajanjeMinuta = u.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz DTO-a
             }).ToList();
 
-            ViewBag.SearchTerm = searchTerm; // Za prikaz trenutnog search termina
+            ViewBag.SearchTerm = searchTerm;
             return View(viewModels);
+        }
+
+        // GET: Usluge/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            var usluga = await _uslugaAppService.GetUslugaByIdAsync(id);
+            if (usluga == null) return NotFound();
+
+            var viewModel = new UslugaViewModel
+            {
+                // Mapiranje na temelju tvojih stvarnih DTO/ViewModel propertyja
+                Id = usluga.Id, // Korišteno 'Id' iz DTO-a
+                Naziv = usluga.Naziv,
+                Opis = usluga.Opis,
+                Cijena = usluga.Cijena,
+                TrajanjeMinuta = usluga.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz DTO-a
+            };
+            return View(viewModel);
         }
 
         // GET: Usluge/Create
@@ -48,17 +68,18 @@ namespace BeautySalon.PresentationMVC.Controllers
                 return View("Edit", viewModel);
             }
 
+            // Kreiramo CreateUslugaDto iz ViewModela s ISPRAVNIM nazivima propertyja
             var createDto = new CreateUslugaDto
             {
                 Naziv = viewModel.Naziv,
                 Opis = viewModel.Opis,
                 Cijena = viewModel.Cijena,
-                TrajanjeMinuta = viewModel.TrajanjeMinuta
+                TrajanjeMinuta = viewModel.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz ViewModela
             };
 
             try
             {
-                var createdUsluga = await _uslugaAppService.CreateUslugaAsync(createDto);
+                await _uslugaAppService.CreateUslugaAsync(createDto); // Prosljeđujemo CreateUslugaDto
                 TempData["SuccessMessage"] = "Usluga je uspješno kreirana!";
                 return RedirectToAction(nameof(Index));
             }
@@ -91,11 +112,12 @@ namespace BeautySalon.PresentationMVC.Controllers
 
             var viewModel = new UslugaViewModel
             {
-                Id = uslugaDto.Id,
+                // Mapiranje na temelju tvojih stvarnih DTO/ViewModel propertyja
+                Id = uslugaDto.Id, // Korišteno 'Id' iz DTO-a
                 Naziv = uslugaDto.Naziv,
                 Opis = uslugaDto.Opis,
                 Cijena = uslugaDto.Cijena,
-                TrajanjeMinuta = uslugaDto.TrajanjeMinuta
+                TrajanjeMinuta = uslugaDto.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz DTO-a
             };
             return View(viewModel);
         }
@@ -105,7 +127,7 @@ namespace BeautySalon.PresentationMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, UslugaViewModel viewModel)
         {
-            if (id != viewModel.Id)
+            if (id != viewModel.Id) // Usporedba s 'Id' iz ViewModela
             {
                 return NotFound();
             }
@@ -115,18 +137,19 @@ namespace BeautySalon.PresentationMVC.Controllers
                 return View(viewModel);
             }
 
+            // Kreiramo UpdateUslugaDto iz ViewModela s ISPRAVNIM nazivima propertyja
             var updateDto = new UpdateUslugaDto
             {
-                Id = viewModel.Id,
+                Id = viewModel.Id, // Korišteno 'Id' iz ViewModela
                 Naziv = viewModel.Naziv,
                 Opis = viewModel.Opis,
                 Cijena = viewModel.Cijena,
-                TrajanjeMinuta = viewModel.TrajanjeMinuta
+                TrajanjeMinuta = viewModel.TrajanjeMinuta // Korišteno 'TrajanjeMinuta' iz ViewModela
             };
 
             try
             {
-                await _uslugaAppService.UpdateUslugaAsync(updateDto);
+                await _uslugaAppService.UpdateUslugaAsync(updateDto); // Prosljeđujemo UpdateUslugaDto
                 TempData["SuccessMessage"] = "Usluga je uspješno ažurirana!";
                 return RedirectToAction(nameof(Index));
             }
@@ -170,11 +193,10 @@ namespace BeautySalon.PresentationMVC.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Došlo je do pogreške prilikom brisanja usluge: {ex.Message}";
-                return RedirectToAction(nameof(Index)); // Ili na Details ako je postojala takva stranica
+                return RedirectToAction(nameof(Index));
             }
         }
 
-      
         /// <summary>
         /// Dohvaća cijenu usluge po ID-u. Koristi se za AJAX pozive u JavaScriptu na stranici termina.
         /// </summary>

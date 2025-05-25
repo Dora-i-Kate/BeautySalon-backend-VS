@@ -5,6 +5,10 @@ using BeautySalon.Domain.Models;
 using BeautySalon.PresentationMVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic; // Dodaj ako nije već tu
+using System.Linq; // Dodaj ako nije već tu
+using System; // Dodaj ako nije već tu
+using System.Threading.Tasks; // Dodaj ako nije već tu
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
@@ -24,19 +28,39 @@ namespace BeautySalon.PresentationMVC.Controllers
         // GET: Termini
         public async Task<IActionResult> Index(DateTime? searchDatumOd, DateTime? searchDatumDo, int? searchZaposlenikId, TerminStatus? searchStatus)
         {
-            var termini = await _terminAppService.SearchTerminiAsync(searchDatumOd, searchDatumDo, searchZaposlenikId, searchStatus);
+            // Dohvaćamo listu termina na temelju parametara pretrage
+            // Ovdje koristimo TerminDto jer je to tip koji vraća SearchTerminiAsync
+            var terminiDto = await _terminAppService.SearchTerminiAsync(searchDatumOd, searchDatumDo, searchZaposlenikId, searchStatus);
 
-            var viewModel = new TerminViewModel
+            // Kreiramo TerminSearchViewModel za prikaz pretrage i rezultata
+            var viewModel = new TerminSearchViewModel // Opet, pretpostavljam da ćeš dodati ovu klasu
             {
                 SearchDatumOd = searchDatumOd,
                 SearchDatumDo = searchDatumDo,
                 SearchZaposlenikId = searchZaposlenikId,
                 SearchStatus = searchStatus,
+
                 Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime", searchZaposlenikId),
-                StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", searchStatus)
+                StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", searchStatus),
+
+                // Mapiramo DTO-ove u listu TerminViewModel (ako je TerminViewModel prikazni model za listu)
+                // Ako imaš TerminListDto, to bi bilo bolje koristiti ovdje
+                Termini = terminiDto.Select(t => new TerminViewModel // ILI TerminListViewModel
+                {
+                    Id = t.Id,
+                    Datum = t.Datum,
+                    Vrijeme = t.Vrijeme,
+                    TrajanjeMinuta = t.TrajanjeMinuta,
+                    Status = t.Status,
+                    KlijentId = t.KlijentId,
+                    KlijentImePrezime = t.KlijentImePrezime, // Dodaj KlijentImePrezime u TerminViewModel ako ga želiš prikazati
+                    ZaposlenikId = t.ZaposlenikId,
+                    ZaposlenikImePrezime = t.ZaposlenikImePrezime, // Dodaj ZaposlenikImePrezime u TerminViewModel
+                    UkupnaCijena = t.UkupnaCijena
+                    // StavkeTermina nisu potrebne za Index prikaz liste
+                }).ToList()
             };
 
-            ViewBag.TerminiList = termini;
             return View(viewModel);
         }
 
@@ -65,7 +89,8 @@ namespace BeautySalon.PresentationMVC.Controllers
                     UslugaId = st.UslugaId,
                     UslugaNaziv = st.UslugaNaziv,
                     Kolicina = st.Kolicina,
-                    Cijena = st.Cijena
+                    Cijena = st.Cijena,
+                    IsDeleted = false
                 }).ToList()
             };
 
@@ -84,19 +109,11 @@ namespace BeautySalon.PresentationMVC.Controllers
                 Status = TerminStatus.Zakazan,
                 StavkeTermina = new List<StavkaTerminaViewModel>
                 {
-                    // Inicijalizirajte s jednom praznom stavkom kako bi se odmah prikazalo polje za uslugu
-                    new StavkaTerminaViewModel { Id = 0, Kolicina = 1, Cijena = 0.00m }
+                    new StavkaTerminaViewModel { Id = 0, Kolicina = 1, Cijena = 0.00m, IsDeleted = false }
                 }
             };
 
-            await PopulateDropdowns(viewModel); // Popuni SelectListe u ViewModelu
-
-            // PROMJENA OVDJE:
-            // Umjesto da proslijeđuješ "ParentUsluge" u ViewData, sada partial view
-            // očekuje "Usluge" u svom ViewData, što će biti proslijeđeno iz glavnog ViewModel.Usluge.
-            // Nema potrebe za ovim retkom ako se koristi pristup proslijeđivanja iz glavnog ViewModela.
-            // ViewData["ParentUsluge"] = viewModel.Usluge; // OVO VIŠE NE TREBA AKO KORISTIŠ DONJI PRISTUP
-
+            await PopulateDropdowns(viewModel);
             return View("Details", viewModel);
         }
 
@@ -105,33 +122,38 @@ namespace BeautySalon.PresentationMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TerminViewModel viewModel)
         {
-            await PopulateDropdowns(viewModel); // Popuni SelectListe u ViewModelu
+            await PopulateDropdowns(viewModel);
 
             if (viewModel.StavkeTermina == null)
             {
                 viewModel.StavkeTermina = new List<StavkaTerminaViewModel>();
             }
 
-            // Ukloni validaciju za UslugaId ako je 0 (jer je to placeholder za "Odaberite uslugu")
-            // Imajte na umu da ovo možda nije idealno rješenje za produkcijsku aplikaciju,
-            // bolja je validacija u ViewModelu ili DTO-u.
-            // Ostavljam ovdje da rješim problem s prikazom, ali razmislite o refaktoriranju validacije.
+            // Ukloni validaciju za stavke koje su obrisane na frontendu ili su prazne
             foreach (var stavka in viewModel.StavkeTermina)
             {
-                if (stavka.UslugaId == 0)
+                if (stavka.IsDeleted || (stavka.UslugaId == 0 && stavka.Kolicina == 0 && stavka.Cijena == 0m))
                 {
                     ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].UslugaId");
+                    ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].Kolicina");
+                    ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].Cijena");
                 }
             }
 
-
             if (!ModelState.IsValid)
             {
-                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje ako se koristi pristup
-                // gdje se SelectList direktno prosljeđuje iz glavnog ViewModela u partial.
-                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
+
+            // Filtriraj samo aktivne stavke za CreateTerminDto
+            var activeStavke = viewModel.StavkeTermina
+                                        .Where(st => !st.IsDeleted && st.UslugaId != 0) // Dodana provjera UslugaId za sigurnost
+                                        .Select(st => new CreateStavkaTerminaDto
+                                        {
+                                            UslugaId = st.UslugaId,
+                                            Kolicina = st.Kolicina,
+                                            Cijena = st.Cijena
+                                        }).ToList();
 
             var createDto = new CreateTerminDto
             {
@@ -140,12 +162,7 @@ namespace BeautySalon.PresentationMVC.Controllers
                 TrajanjeMinuta = viewModel.TrajanjeMinuta,
                 KlijentId = viewModel.KlijentId,
                 ZaposlenikId = viewModel.ZaposlenikId,
-                StavkeTermina = viewModel.StavkeTermina.Select(st => new CreateStavkaTerminaDto
-                {
-                    UslugaId = st.UslugaId,
-                    Kolicina = st.Kolicina,
-                    Cijena = st.Cijena
-                }).ToList()
+                StavkeTermina = activeStavke // Šaljemo samo aktivne stavke
             };
 
             try
@@ -163,15 +180,11 @@ namespace BeautySalon.PresentationMVC.Controllers
                         ModelState.AddModelError(error.Key, msg);
                     }
                 }
-                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
-                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Došlo je do pogreške prilikom kreiranja termina: {ex.Message}");
-                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
-                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
         }
@@ -186,29 +199,43 @@ namespace BeautySalon.PresentationMVC.Controllers
                 return NotFound();
             }
 
-            await PopulateDropdowns(viewModel); // Popuni SelectListe u ViewModelu
+            await PopulateDropdowns(viewModel);
 
             if (viewModel.StavkeTermina == null)
             {
                 viewModel.StavkeTermina = new List<StavkaTerminaViewModel>();
             }
 
-            // Ukloni validaciju za UslugaId ako je 0
+            // Ukloni validaciju za stavke koje su obrisane na frontendu ili su prazne
             foreach (var stavka in viewModel.StavkeTermina)
             {
-                if (stavka.UslugaId == 0)
+                if (stavka.IsDeleted || (stavka.UslugaId == 0 && stavka.Kolicina == 0 && stavka.Cijena == 0m))
                 {
                     ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].UslugaId");
+                    ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].Kolicina");
+                    ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].Cijena");
                 }
             }
 
-
             if (!ModelState.IsValid)
             {
-                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
-                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
+
+            // --- KLJUČNA PROMJENA: Prilagodba za tvoju postojeću UpdateTerminAsync metodu ---
+            // Tvoja UpdateTerminAsync metoda očekuje da u UpdateTerminDto budu SVE STAVKE
+            // koje bi trebale biti prisutne nakon ažuriranja.
+            // Ona sama detektira koje su obrisane usporedbom s postojećim stavkama.
+            // Stoga, ne šaljemo zasebnu listu deletedStavkaIds ovdje.
+            var allStavkeForUpdate = viewModel.StavkeTermina
+                                               .Where(st => !st.IsDeleted && st.UslugaId != 0) // Opet, filtriramo prazne/obrisane
+                                               .Select(st => new UpdateStavkaTerminaDto // Koristimo UpdateStavkaTerminaDto
+                                               {
+                                                   Id = st.Id,
+                                                   UslugaId = st.UslugaId,
+                                                   Kolicina = st.Kolicina,
+                                                   Cijena = st.Cijena
+                                               }).ToList();
 
             var updateDto = new UpdateTerminDto
             {
@@ -219,17 +246,12 @@ namespace BeautySalon.PresentationMVC.Controllers
                 Status = viewModel.Status,
                 KlijentId = viewModel.KlijentId,
                 ZaposlenikId = viewModel.ZaposlenikId,
-                StavkeTermina = viewModel.StavkeTermina.Select(st => new UpdateStavkaTerminaDto
-                {
-                    Id = st.Id,
-                    UslugaId = st.UslugaId,
-                    Kolicina = st.Kolicina,
-                    Cijena = st.Cijena
-                }).ToList()
+                StavkeTermina = allStavkeForUpdate // Šaljemo sve *aktivne* stavke
             };
 
             try
             {
+                // Pozivamo tvoju postojeću metodu UpdateTerminAsync
                 await _terminAppService.UpdateTerminAsync(updateDto);
                 TempData["SuccessMessage"] = "Termin je uspješno ažuriran!";
                 return RedirectToAction(nameof(Details), new { id = viewModel.Id });
@@ -247,15 +269,11 @@ namespace BeautySalon.PresentationMVC.Controllers
                         ModelState.AddModelError(error.Key, msg);
                     }
                 }
-                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
-                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Došlo je do pogreške prilikom ažuriranja termina: {ex.Message}");
-                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
-                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
         }
@@ -273,12 +291,14 @@ namespace BeautySalon.PresentationMVC.Controllers
             }
             catch (KeyNotFoundException)
             {
+                // Ako termin nije pronađen, vrati 404
                 return NotFound();
             }
             catch (Exception ex)
             {
+                // Ako dođe do druge greške, prikaži poruku i preusmjeri na Index
                 TempData["ErrorMessage"] = $"Došlo je do pogreške prilikom brisanja termina: {ex.Message}";
-                return RedirectToAction(nameof(Details), new { id = id });
+                return RedirectToAction(nameof(Index));
             }
         }
 
@@ -290,15 +310,15 @@ namespace BeautySalon.PresentationMVC.Controllers
             {
                 Id = 0,
                 Kolicina = 1,
-                Cijena = 0.00m
+                Cijena = 0.00m,
+                IsDeleted = false
             };
 
             var usluge = await _uslugaAppService.GetAllUslugeAsync();
             var uslugeSelectList = new SelectList(usluge, "Id", "Naziv");
 
             ViewData["Index"] = index;
-            // PROMJENA OVDJE: Koristi ključ "Usluge" umjesto "ParentUsluge"
-            ViewData["Usluge"] = uslugeSelectList; // Proslijedi SelectList za usluge
+            ViewData["Usluge"] = uslugeSelectList;
 
             return PartialView("_StavkaTerminaPartial", model);
         }
@@ -308,7 +328,6 @@ namespace BeautySalon.PresentationMVC.Controllers
         {
             viewModel.Klijenti = new SelectList(await _korisnikAppService.GetKlijentiForLookupAsync(), "Id", "ImePrezime", viewModel.KlijentId);
             viewModel.Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime", viewModel.ZaposlenikId);
-            // Dodana linija za popunjavanje usluga u glavni ViewModel
             viewModel.Usluge = new SelectList(await _uslugaAppService.GetAllUslugeAsync(), "Id", "Naziv");
             viewModel.StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", viewModel.Status);
         }

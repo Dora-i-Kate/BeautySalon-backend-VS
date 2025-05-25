@@ -1,9 +1,10 @@
-﻿@using BeautySalon.Application.DTOs.Termin
-@model BeautySalon.PresentationMVC.ViewModels.TerminViewModel
+﻿@* BeautySalon.PresentationMVC\Views\Termini\Index.cshtml *@
+@model BeautySalon.PresentationMVC.ViewModels.TerminSearchViewModel
+@using BeautySalon.Application.DTOs.Termin
+@using BeautySalon.Domain.Models // Za TerminStatus
 
 @{
     ViewData["Title"] = "Popis termina";
-    var termini = ViewBag.TerminiList as IEnumerable<TerminDto>;
 }
 
 <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
@@ -42,7 +43,7 @@
         <a asp-action="Create" class="btn btn-primary">Kreiraj novi termin</a>
     </p>
 
-    @if (termini != null && termini.Any())
+    @if (Model.Termini != null && Model.Termini.Any())
     {
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -60,7 +61,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach (var item in termini)
+                    @foreach (var item in Model.Termini)
                     {
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

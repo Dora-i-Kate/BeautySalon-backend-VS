@@ -1,0 +1,50 @@
+﻿@model BeautySalon.PresentationMVC.ViewModels.MaterijalViewModel
+
+@{
+    ViewData["Title"] = "Obriši materijal";
+}
+
+<div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
+
+    <h3 class="text-xl font-semibold text-gray-700 mb-4">Jeste li sigurni da želite obrisati ovaj materijal?</h3>
+    <p class="text-red-600 mb-6">Ova radnja je nepovratna.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.Naziv):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.Naziv)</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.VrstaNaziv):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.VrstaNaziv)</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.Cijena):</span>
+            <span class="detail-value">@Model.Cijena.ToString("C2")</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.MinimalnaKolicina):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.MinimalnaKolicina)</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.JedinicaMjere):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.JedinicaMjere)</span>
+        </div>
+    </div>
+
+    <form asp-action="Delete" method="post" class="mt-6">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="MaterijalId" />
+        <div class="flex justify-end space-x-3">
+            <a asp-action="Index" class="btn btn-secondary">Odustani</a>
+            <button type="submit" class="btn btn-danger">Obriši</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -6,27 +6,26 @@
 
 @{
     var index = ViewData["Index"] as int?;
+    // Za nove stavke koje dolaze preko AJAX-a, inicijalni index je 0.
+    // JavaScript će ga naknadno ažurirati.
     var namePrefix = index.HasValue ? $"StavkeTermina[{index.Value}]" : "StavkeTermina[0]";
 
-    // PROMJENA OVDJE: Dohvaćate uslugeSelectList iz ViewData dictionary-a,
-    // pod ključem "Usluge" (ili "ParentUsluge" ako se tako odluči, ali "Usluge" je konzistentnije)
-    var uslugeSelectList = ViewData["Usluge"] as SelectList; // <-- PROMJENA OVDJE: Ključ je "Usluge"
+    var uslugeSelectList = ViewData["Usluge"] as SelectList;
 }
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border p-4 rounded-md bg-gray-50 relative stavka-termina-item"
      data-stavka-id="@Model.Id" @(Model.Id == 0 ? "data-is-new='true'" : "")>
-    @* Dodan data-is-new atribut samo za nove stavke *@
 
-    <input type="hidden" name="@(namePrefix).Id" value="@Model.Id" />
-    <input type="hidden" name="@(namePrefix).UslugaNaziv" value="@Model.UslugaNaziv" />
-    <input type="hidden" name="@(namePrefix).UslugaId" value="@Model.UslugaId" />
+    <input type="hidden" name="@(namePrefix).Id" value="@Model.Id" class="item-id-hidden" />
+    <input type="hidden" name="@(namePrefix).UslugaNaziv" value="@Model.UslugaNaziv" class="usluga-naziv-hidden" />
+    <input type="hidden" name="@(namePrefix).UslugaId" value="@Model.UslugaId" class="usluga-id-hidden" />
+    <input type="hidden" name="@(namePrefix).IsDeleted" value="@Model.IsDeleted.ToString().ToLower()" class="is-deleted-field" />
 
     <div>
         <label for="@(namePrefix)__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
 
         @* Prikaz za postojeće stavke (display mode) *@
         <div class="display-mode @(Model.Id == 0 ? "hidden" : "")">
-            @* Hidden samo ako je nova stavka *@
             <p class="mt-1 block w-full input-field-readonly" data-usluga-naziv>@Model.UslugaNaziv</p>
             @if (Model.Id != 0)
             {
@@ -36,23 +35,26 @@
 
         @* Prikaz za nove ili uređivane stavke (edit mode) *@
         <div class="edit-mode @(Model.Id != 0 ? "hidden" : "")">
-            @* Hidden samo ako nije nova stavka *@
-            <select name="@(namePrefix).UslugaId" id="@(namePrefix)__UslugaId" class="mt-1 block w-full input-field" asp-items="@uslugeSelectList">
+            <select name="@(namePrefix).UslugaId" id="@(namePrefix)__UslugaId" class="mt-1 block w-full input-field usluga-select" asp-items="@uslugeSelectList">
                 <option value="">-- Odaberite uslugu --</option>
             </select>
-            <button type="button" class="btn btn-secondary btn-sm mt-1 cancel-stavka-btn">Odustani</button>
+            <span data-valmsg-for="@(namePrefix).UslugaId" class="validation-message"></span>
+            @* Dodajemo gumb za odustajanje samo za nove stavke, jer za postojeće prebacujemo natrag u display mode *@
+            @if (Model.Id == 0)
+            {
+                <button type="button" class="btn btn-secondary btn-sm mt-1 cancel-stavka-btn">Odustani</button>
+            }
         </div>
-        <span data-valmsg-for="@(namePrefix).UslugaId" class="validation-message"></span>
     </div>
 
     <div>
         <label for="@(namePrefix)__Kolicina" class="block text-sm font-medium text-gray-700">Količina</label>
-        <input type="number" name="@(namePrefix).Kolicina" id="@(namePrefix)__Kolicina" value="@Model.Kolicina" class="mt-1 block w-full input-field" />
+        <input type="number" name="@(namePrefix).Kolicina" id="@(namePrefix)__Kolicina" value="@Model.Kolicina" class="mt-1 block w-full input-field kolicina-input" />
         <span data-valmsg-for="@(namePrefix).Kolicina" class="validation-message"></span>
     </div>
     <div>
         <label for="@(namePrefix)__Cijena" class="block text-sm font-medium text-gray-700">Cijena</label>
-        <input type="number" name="@(namePrefix).Cijena" id="@(namePrefix)__Cijena" value="@Model.Cijena.ToString("F2")" step="0.01" class="mt-1 block w-full input-field" readonly />
+        <input type="number" name="@(namePrefix).Cijena" id="@(namePrefix)__Cijena" value="@Model.Cijena.ToString("F2")" step="0.01" class="mt-1 block w-full input-field cijena-input" readonly />
         <span data-valmsg-for="@(namePrefix).Cijena" class="validation-message"></span>
     </div>
     <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 remove-stavka-btn">

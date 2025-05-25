@@ -5,6 +5,8 @@ using BeautySalon.DataAccess.Repositories;
 using BeautySalon.Domain.Interfaces;
 using BeautySalon.Domain.Services;
 using Microsoft.EntityFrameworkCore;
+// Uklonjeno: using System.Globalization;
+// Uklonjeno: using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,20 +17,29 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<BeautySalonDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Registracija repozitorija (DataAccess Layer)
+// REGISTRACIJA REPOZITORIJA (DataAccess Layer)
 builder.Services.AddScoped<IKorisnikRepository, KorisnikRepository>();
 builder.Services.AddScoped<ITerminRepository, TerminRepository>();
 builder.Services.AddScoped<IUlogaRepository, UlogaRepository>();
-builder.Services.AddScoped<IUslugaRepository, UslugaRepository>();
+builder.Services.AddScoped<IUslugaRepository, UslugaRepository>(); // ISPRAVLJENO: Implementacijski tip je UslugaRepository
+builder.Services.AddScoped<IMaterijalRepository, MaterijalRepository>();
+builder.Services.AddScoped<IVrstaMaterijalaRepository, VrstaMaterijalaRepository>();
 
-// Registracija domenskih validatora (Domain Layer)
+
+// REGISTRACIJA DOMENSKIH VALIDATORA (Domain Layer)
 builder.Services.AddScoped<TerminValidator>();
 builder.Services.AddScoped<UslugaValidator>();
+builder.Services.AddScoped<MaterijalValidator>();
+builder.Services.AddScoped<VrstaMaterijalaValidator>();
 
-// Registracija aplikacijskih servisa (Application Layer)
+
+// REGISTRACIJA APLIKACIJSKIH SERVISA (Application Layer)
 builder.Services.AddScoped<ITerminAppService, TerminAppService>();
 builder.Services.AddScoped<IUslugaAppService, UslugaAppService>();
 builder.Services.AddScoped<IKorisnikAppService, KorisnikAppService>();
+builder.Services.AddScoped<IMaterijalAppService, MaterijalAppService>();
+builder.Services.AddScoped<IVrstaMaterijalaAppService, VrstaMaterijalaAppService>();
+
 
 var app = builder.Build();
 
@@ -36,12 +47,22 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Uklonjen je cijeli blok za Request Localization
+// var defaultCulture = new CultureInfo("hr-HR");
+// var localizationOptions = new RequestLocalizationOptions
+// {
+//     DefaultRequestCulture = new RequestCulture(defaultCulture),
+//     SupportedCultures = new List<CultureInfo> { defaultCulture },
+//     SupportedUICultures = new List<CultureInfo> { defaultCulture }
+// };
+// app.UseRequestLocalization(localizationOptions);
+
 
 app.UseRouting();
 

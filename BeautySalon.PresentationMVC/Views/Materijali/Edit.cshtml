@@ -1,0 +1,63 @@
+﻿@model BeautySalon.PresentationMVC.ViewModels.MaterijalViewModel
+
+@{
+    ViewData["Title"] = "Uredi materijal";
+}
+
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
+
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="MaterijalId" /> @* Skriveni input za ID materijala *@
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <label asp-for="Naziv" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Naziv" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="Naziv" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="Cijena" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Cijena" type="number" step="0.01" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="Cijena" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="MinimalnaKolicina" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="MinimalnaKolicina" type="number" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="MinimalnaKolicina" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="TrenutnaKolicina" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="TrenutnaKolicina" type="number" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="TrenutnaKolicina" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="JedinicaMjere" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="JedinicaMjere" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="JedinicaMjere" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="VrstaId" class="block text-sm font-medium text-gray-700"></label>
+                <select asp-for="VrstaId" asp-items="Model.VrsteMaterijala" class="mt-1 block w-full input-field">
+                    <option value="">-- Odaberite vrstu materijala --</option>
+                </select>
+                <span asp-validation-for="VrstaId" class="validation-message"></span>
+            </div>
+        </div>
+
+        @* Prikaz svih validacijskih grešaka koje nisu vezane uz pojedino polje *@
+        <div asp-validation-summary="All" class="validation-message mt-4"></div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+            <a asp-action="Index" class="btn btn-secondary">Natrag na popis</a>
+            <button type="submit" class="btn btn-primary">Spremi promjene</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

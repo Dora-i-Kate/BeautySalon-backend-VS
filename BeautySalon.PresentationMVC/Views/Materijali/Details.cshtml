@@ -1,0 +1,47 @@
+﻿@model BeautySalon.PresentationMVC.ViewModels.MaterijalViewModel
+
+@{
+    ViewData["Title"] = "Detalji materijala";
+}
+
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.Naziv):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.Naziv)</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.VrstaNaziv):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.VrstaNaziv)</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.Cijena):</span>
+            <span class="detail-value">@Model.Cijena.ToString("C2")</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.MinimalnaKolicina):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.MinimalnaKolicina)</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.TrenutnaKolicina):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.TrenutnaKolicina)</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">@Html.DisplayNameFor(model => model.JedinicaMjere):</span>
+            <span class="detail-value">@Html.DisplayFor(model => model.JedinicaMjere)</span>
+        </div>
+    </div>
+
+    <div class="flex justify-end space-x-3 mt-6">
+        <a asp-action="Edit" asp-route-id="@Model.MaterijalId" class="btn btn-primary">Uredi</a>
+        <a asp-action="Index" class="btn btn-secondary">Natrag na popis</a>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
