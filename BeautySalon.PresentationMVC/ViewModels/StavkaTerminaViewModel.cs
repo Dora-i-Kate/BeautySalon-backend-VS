@@ -1,13 +1,8 @@
-﻿// In BeautySalon.PresentationMVC.ViewModels/StavkaTerminaViewModel.cs
-
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Xunit.Sdk;
 
 namespace BeautySalon.PresentationMVC.ViewModels
 {
-    /// <summary>
-    /// ViewModel za prikaz i unos stavki termina.
-    /// Koristi se unutar TerminViewModela.
-    /// </summary>
     public class StavkaTerminaViewModel
     {
         public int Id { get; set; } // 0 za nove stavke
@@ -18,9 +13,7 @@ namespace BeautySalon.PresentationMVC.ViewModels
         public int UslugaId { get; set; }
 
         [Display(Name = "Naziv usluge")]
-        public string? UslugaNaziv { get; set; } // <-- MAKE IT NULLABLE
-                                                 // Or remove it if it's strictly not needed on the ViewModel,
-                                                 // but for display purposes, nullable is fine.
+        public string? UslugaNaziv { get; set; }
 
         [Required(ErrorMessage = "Količina je obavezna.")]
         [Range(1, int.MaxValue, ErrorMessage = "Količina mora biti barem 1.")]
@@ -31,5 +24,7 @@ namespace BeautySalon.PresentationMVC.ViewModels
         [Range(0.01, double.MaxValue, ErrorMessage = "Cijena mora biti pozitivna.")]
         [Display(Name = "Cijena")]
         public decimal Cijena { get; set; }
+
+        public bool IsDeleted { get; set; } // DODANO: Za označavanje brisanja
     }
 }

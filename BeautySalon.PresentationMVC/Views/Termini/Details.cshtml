@@ -1,4 +1,6 @@
-﻿@model BeautySalon.PresentationMVC.ViewModels.TerminViewModel
+﻿@* BeautySalon.PresentationMVC\Views\Termini\Details.cshtml *@
+
+@model BeautySalon.PresentationMVC.ViewModels.TerminViewModel
 
 @{
     ViewData["Title"] = Model.Id == 0 ? "Kreiraj termin" : "Detalji termina";
@@ -52,7 +54,8 @@
         <div id="stavkeTerminaContainer">
             @for (int i = 0; i < Model.StavkeTermina.Count; i++)
             {
-                @Html.Partial("_StavkaTerminaPartial", Model.StavkeTermina[i], new ViewDataDictionary(ViewData) { { "Index", i }, { "ParentUsluge", Model.Usluge } })
+                @* PROMJENA OVDJE: Proslijedi Usluge iz glavnog Modela u partial view *@
+                @Html.Partial("_StavkaTerminaPartial", Model.StavkeTermina[i], new ViewDataDictionary(ViewData) { { "Index", i }, { "Usluge", Model.Usluge } })
             }
         </div>
 
@@ -82,68 +85,29 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
-        // JavaScript za dinamičko dodavanje/uklanjanje stavki termina
-        let stavkaIndex = @(Model.StavkeTermina?.Count ?? 0); // Početni indeks za nove stavke
+        // Postavi početni indeks za nove stavke
+        let stavkaIndex = @(Model.StavkeTermina?.Count ?? 0);
 
-        document.getElementById('addStavkaBtn').addEventListener('click', function () {
-            const container = document.getElementById('stavkeTerminaContainer');
-            const newStavkaHtml = `
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border p-4 rounded-md bg-gray-50 relative">
-                                    <input type="hidden" name="StavkeTermina[${stavkaIndex}].Id" value="0" />
-                                    <div>
-                                        <label for="StavkeTermina_${stavkaIndex}__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
-                                        <select name="StavkeTermina[${stavkaIndex}].UslugaId" id="StavkeTermina_${stavkaIndex}__UslugaId" class="mt-1 block w-full input-field">
-                                            <option value="">-- Odaberite uslugu --</option>
-        @foreach (var usluga in Model.Usluge)
-        {
-                                                    <option value="@usluga.Value">@usluga.Text</option>
-        }
-                                        </select>
-                                        <span data-valmsg-for="StavkeTermina[${stavkaIndex}].UslugaId" class="validation-message"></span>
-                                    </div>
-                                    <div>
-                                        <label for="StavkeTermina_${stavkaIndex}__Kolicina" class="block text-sm font-medium text-gray-700">Količina</label>
-                                        <input type="number" name="StavkeTermina[${stavkaIndex}].Kolicina" id="StavkeTermina_${stavkaIndex}__Kolicina" value="1" class="mt-1 block w-full input-field" />
-                                        <span data-valmsg-for="StavkeTermina[${stavkaIndex}].Kolicina" class="validation-message"></span>
-                                    </div>
-                                    <div>
-                                        <label for="StavkeTermina_${stavkaIndex}__Cijena" class="block text-sm font-medium text-gray-700">Cijena</label>
-                                        <input type="number" name="StavkeTermina[${stavkaIndex}].Cijena" id="StavkeTermina_${stavkaIndex}__Cijena" value="0.00" step="0.01" class="mt-1 block w-full input-field" readonly />
-                                        <span data-valmsg-for="StavkeTermina[${stavkaIndex}].Cijena" class="validation-message"></span>
-                                    </div>
-                                    <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 remove-stavka-btn">
-                                        <i class="fas fa-times-circle"></i>
-                                    </button>
-                                </div>
-                            `;
-            const newStavkaElement = document.createElement('div');
-            newStavkaElement.innerHTML = newStavkaHtml.trim();
-            container.appendChild(newStavkaElement);
-
-            // Re-parse unobtrusive validation for the new elements
-            const form = document.querySelector('form');
-            $.validator.unobtrusive.parseElement(newStavkaElement.querySelector('select[name^="StavkeTermina["]'));
-            $.validator.unobtrusive.parseElement(newStavkaElement.querySelector('input[name^="StavkeTermina["]'));
-
-            // Attach event listeners for the new elements
-            attachStavkaEventListeners(newStavkaElement);
-
-            stavkaIndex++;
-            updateTotalCijena();
-        });
-
-        // Event listener za brisanje stavke
-        document.getElementById('stavkeTerminaContainer').addEventListener('click', function (e) {
-            if (e.target.closest('.remove-stavka-btn')) {
-                e.target.closest('.grid').remove();
-                updateTotalCijena();
+        // Funkcija za dohvaćanje cijene usluge s backend-a
+        async function getUslugaPrice(uslugaId) {
+            try {
+                // Pazite da imate UslugeController s ovom akcijom
+                const response = await fetch(`/Usluge/GetUslugaPrice?id=${uslugaId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.cijena;
+            } catch (error) {
+                console.error('Greška pri dohvaćanju cijene usluge:', error);
+                return 0.00; // Vrati 0 u slučaju greške
             }
-        });
+        }
 
         // Funkcija za ažuriranje ukupne cijene
         function updateTotalCijena() {
             let total = 0;
-            document.querySelectorAll('#stavkeTerminaContainer .grid').forEach(stavkaDiv => {
+            document.querySelectorAll('#stavkeTerminaContainer .stavka-termina-item').forEach(stavkaDiv => {
                 const cijenaInput = stavkaDiv.querySelector('input[name$=".Cijena"]');
                 const kolicinaInput = stavkaDiv.querySelector('input[name$=".Kolicina"]');
 
@@ -152,7 +116,40 @@
 
                 total += (cijena * kolicina);
             });
-            document.getElementById('ukupnaCijenaDisplay').innerText = total.toLocaleString('hr-HR', { style: 'currency', currency: 'HRK' }); // Formatira kao valutu
+            // Formatiraj valutu prema lokalnim postavkama (npr. HRK)
+            document.getElementById('ukupnaCijenaDisplay').innerText = total.toLocaleString('hr-HR', { style: 'currency', currency: 'HRK' });
+        }
+
+        // Funkcija za prebacivanje između prikaza i uređivanja stavke
+        function toggleStavkaMode(stavkaItem, isEditMode) {
+            const displayModeDiv = stavkaItem.querySelector('.display-mode');
+            const editModeDiv = stavkaItem.querySelector('.edit-mode');
+            const uslugaSelect = stavkaItem.querySelector('select[name$=".UslugaId"]');
+            const hiddenUslugaNaziv = stavkaItem.querySelector('input[name$=".UslugaNaziv"]');
+            const hiddenUslugaId = stavkaItem.querySelector('input[name$=".UslugaId"][type="hidden"]');
+            const displayUslugaNazivP = stavkaItem.querySelector('[data-usluga-naziv]');
+
+            if (isEditMode) {
+                displayModeDiv.classList.add('hidden');
+                editModeDiv.classList.remove('hidden');
+                if (uslugaSelect && hiddenUslugaId && hiddenUslugaId.value) {
+                    uslugaSelect.value = hiddenUslugaId.value;
+                }
+            } else {
+                if (stavkaItem.dataset.isNew === 'true') { // Ako je nova stavka, ukloni je prilikom odustajanja
+                    stavkaItem.remove();
+                } else {
+                    displayModeDiv.classList.remove('hidden');
+                    editModeDiv.classList.add('hidden');
+                    if (displayUslugaNazivP && hiddenUslugaNaziv) {
+                        displayUslugaNazivP.innerText = hiddenUslugaNaziv.value;
+                    }
+                    if (uslugaSelect && hiddenUslugaId) {
+                        uslugaSelect.value = hiddenUslugaId.value;
+                    }
+                }
+            }
+            updateTotalCijena();
         }
 
         // Funkcija za attachanje event listenera na Select i Quantity za pojedinu stavku
@@ -160,19 +157,39 @@
             const uslugaSelect = stavkaElement.querySelector('select[name$=".UslugaId"]');
             const kolicinaInput = stavkaElement.querySelector('input[name$=".Kolicina"]');
             const cijenaInput = stavkaElement.querySelector('input[name$=".Cijena"]');
+            const hiddenUslugaNaziv = stavkaElement.querySelector('input[name$=".UslugaNaziv"]');
+            const hiddenUslugaIdInput = stavkaElement.querySelector('input[name$=".UslugaId"][type="hidden"]');
+            const displayUslugaNazivP = stavkaElement.querySelector('[data-usluga-naziv]');
 
             if (uslugaSelect) {
                 uslugaSelect.addEventListener('change', async function () {
                     const uslugaId = this.value;
+                    const selectedUslugaText = this.options[this.selectedIndex].text;
+
                     if (uslugaId) {
-                        try {
-                            const response = await fetch(`/Usluge/GetUslugaPrice?id=${uslugaId}`);
-                            const data = await response.json();
-                            cijenaInput.value = data.cijena.toFixed(2); // Postavi cijenu usluge
-                        } catch (error) {
-                            console.error('Greška pri dohvaćanju cijene usluge:', error);
-                            cijenaInput.value = '0.00';
-                        }
+                        const cijena = await getUslugaPrice(uslugaId);
+                        cijenaInput.value = (cijena * (parseInt(kolicinaInput.value) || 1)).toFixed(2);
+                        if (displayUslugaNazivP) displayUslugaNazivP.innerText = selectedUslugaText;
+                        if (hiddenUslugaNaziv) hiddenUslugaNaziv.value = selectedUslugaText;
+                        if (hiddenUslugaIdInput) hiddenUslugaIdInput.value = uslugaId;
+                    } else {
+                        cijenaInput.value = '0.00';
+                        if (displayUslugaNazivP) displayUslugaNazivP.innerText = '';
+                        if (hiddenUslugaNaziv) hiddenUslugaNaziv.value = '';
+                        if (hiddenUslugaIdInput) hiddenUslugaIdInput.value = '0';
+                    }
+                    updateTotalCijena();
+                });
+            }
+
+            if (kolicinaInput) {
+                kolicinaInput.addEventListener('input', async function () {
+                    const kolicina = parseInt(this.value || 0);
+                    const uslugaId = uslugaSelect ? uslugaSelect.value : (hiddenUslugaIdInput ? hiddenUslugaIdInput.value : null);
+
+                    if (uslugaId) {
+                        const cijenaPoKomadu = await getUslugaPrice(uslugaId);
+                        cijenaInput.value = (cijenaPoKomadu * kolicina).toFixed(2);
                     } else {
                         cijenaInput.value = '0.00';
                     }
@@ -180,17 +197,55 @@
                 });
             }
 
-            if (kolicinaInput) {
-                kolicinaInput.addEventListener('input', function () {
-                    updateTotalCijena();
-                });
+            // Ako je nova stavka (Id == 0), prikaži je odmah u edit modu
+            if (stavkaElement.dataset.isNew === 'true') {
+                toggleStavkaMode(stavkaElement, true);
             }
         }
 
-        // Attach event listeners for existing stavke on page load
-        document.querySelectorAll('#stavkeTerminaContainer .grid').forEach(attachStavkaEventListeners);
+        // Kada se stranica učita
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('addStavkaBtn').addEventListener('click', function () {
+                const container = document.getElementById('stavkeTerminaContainer');
+                fetch(`@Url.Action("GetNewStavkaTerminaPartial", "Termini")?index=${stavkaIndex}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        const newStavkaElementWrapper = document.createElement('div');
+                        newStavkaElementWrapper.innerHTML = html.trim();
+                        const newStavkaElement = newStavkaElementWrapper.firstElementChild;
+                        container.appendChild(newStavkaElement);
 
-        // Initial total calculation on page load
-        updateTotalCijena();
+                        const form = document.querySelector('form');
+                        $.validator.unobtrusive.parse(newStavkaElement);
+
+                        attachStavkaEventListeners(newStavkaElement);
+
+                        stavkaIndex++;
+                        updateTotalCijena();
+                    })
+                    .catch(error => console.error('Greška pri dodavanju nove stavke:', error));
+            });
+
+            document.getElementById('stavkeTerminaContainer').addEventListener('click', function (e) {
+                if (e.target.closest('.remove-stavka-btn')) {
+                    e.target.closest('.stavka-termina-item').remove();
+                    updateTotalCijena();
+                }
+                if (e.target.closest('.edit-stavka-btn')) {
+                    const stavkaItem = e.target.closest('.stavka-termina-item');
+                    toggleStavkaMode(stavkaItem, true);
+                }
+                if (e.target.closest('.cancel-stavka-btn')) {
+                    const stavkaItem = e.target.closest('.stavka-termina-item');
+                    toggleStavkaMode(stavkaItem, false);
+                }
+            });
+
+            // Attach event listeners for existing stavke on page load
+            document.querySelectorAll('#stavkeTerminaContainer .stavka-termina-item').forEach(attachStavkaEventListeners);
+
+            // Initial total calculation on page load
+            updateTotalCijena();
+        });
     </script>
 }

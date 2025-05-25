@@ -4,7 +4,7 @@ using BeautySalon.Domain.Exceptions;
 using BeautySalon.Domain.Models;
 using BeautySalon.PresentationMVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering; // Ensure this is present
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
@@ -36,7 +36,7 @@ namespace BeautySalon.PresentationMVC.Controllers
                 StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", searchStatus)
             };
 
-            ViewBag.TerminiList = termini; // Proslijedi listu termina u ViewBag za prikaz u Index viewu
+            ViewBag.TerminiList = termini;
             return View(viewModel);
         }
 
@@ -69,29 +69,34 @@ namespace BeautySalon.PresentationMVC.Controllers
                 }).ToList()
             };
 
-            // Popuni SelectListe za Details/Edit view
             await PopulateDropdowns(viewModel);
-
             return View(viewModel);
         }
-
 
         // GET: Termini/Create
         public async Task<IActionResult> Create()
         {
             var viewModel = new TerminViewModel
             {
-                Datum = DateTime.Now.Date, // Predpopuni današnji datum
-                Vrijeme = TimeSpan.FromHours(9), // Predpopuni 9:00
-                TrajanjeMinuta = 60, // Predpopuni 60 minuta
-                Status = TerminStatus.Zakazan, // Predpopuni status
-                StavkeTermina = new List<StavkaTerminaViewModel>() // KLJUČNA INICIJALIZACIJA ZA NOVI TERMIN
+                Datum = DateTime.Now.Date,
+                Vrijeme = TimeSpan.FromHours(9),
+                TrajanjeMinuta = 60,
+                Status = TerminStatus.Zakazan,
+                StavkeTermina = new List<StavkaTerminaViewModel>
+                {
+                    // Inicijalizirajte s jednom praznom stavkom kako bi se odmah prikazalo polje za uslugu
+                    new StavkaTerminaViewModel { Id = 0, Kolicina = 1, Cijena = 0.00m }
+                }
             };
 
-            await PopulateDropdowns(viewModel); // Popuni SelectListe
+            await PopulateDropdowns(viewModel); // Popuni SelectListe u ViewModelu
 
-            // Ako koristite isti 'Details' view za Create i Edit, ovo je u redu.
-            // Inače biste vratili View("Create", viewModel);
+            // PROMJENA OVDJE:
+            // Umjesto da proslijeđuješ "ParentUsluge" u ViewData, sada partial view
+            // očekuje "Usluge" u svom ViewData, što će biti proslijeđeno iz glavnog ViewModel.Usluge.
+            // Nema potrebe za ovim retkom ako se koristi pristup proslijeđivanja iz glavnog ViewModela.
+            // ViewData["ParentUsluge"] = viewModel.Usluge; // OVO VIŠE NE TREBA AKO KORISTIŠ DONJI PRISTUP
+
             return View("Details", viewModel);
         }
 
@@ -100,17 +105,31 @@ namespace BeautySalon.PresentationMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TerminViewModel viewModel)
         {
-            // Ponovno popuni SelectListe u slučaju greške validacije
-            await PopulateDropdowns(viewModel);
+            await PopulateDropdowns(viewModel); // Popuni SelectListe u ViewModelu
 
-            // Dodatna provjera ako model binder nije uspio vezati stavke termina (npr. prazna lista)
             if (viewModel.StavkeTermina == null)
             {
                 viewModel.StavkeTermina = new List<StavkaTerminaViewModel>();
             }
 
+            // Ukloni validaciju za UslugaId ako je 0 (jer je to placeholder za "Odaberite uslugu")
+            // Imajte na umu da ovo možda nije idealno rješenje za produkcijsku aplikaciju,
+            // bolja je validacija u ViewModelu ili DTO-u.
+            // Ostavljam ovdje da rješim problem s prikazom, ali razmislite o refaktoriranju validacije.
+            foreach (var stavka in viewModel.StavkeTermina)
+            {
+                if (stavka.UslugaId == 0)
+                {
+                    ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].UslugaId");
+                }
+            }
+
+
             if (!ModelState.IsValid)
             {
+                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje ako se koristi pristup
+                // gdje se SelectList direktno prosljeđuje iz glavnog ViewModela u partial.
+                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
 
@@ -144,11 +163,15 @@ namespace BeautySalon.PresentationMVC.Controllers
                         ModelState.AddModelError(error.Key, msg);
                     }
                 }
+                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
+                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Došlo je do pogreške prilikom kreiranja termina: {ex.Message}");
+                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
+                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
         }
@@ -163,18 +186,27 @@ namespace BeautySalon.PresentationMVC.Controllers
                 return NotFound();
             }
 
-            // Ponovno popuni SelectListe u slučaju greške validacije
-            await PopulateDropdowns(viewModel);
+            await PopulateDropdowns(viewModel); // Popuni SelectListe u ViewModelu
 
-            // Dodatna provjera ako model binder nije uspio vezati stavke termina (npr. prazna lista)
             if (viewModel.StavkeTermina == null)
             {
                 viewModel.StavkeTermina = new List<StavkaTerminaViewModel>();
             }
 
+            // Ukloni validaciju za UslugaId ako je 0
+            foreach (var stavka in viewModel.StavkeTermina)
+            {
+                if (stavka.UslugaId == 0)
+                {
+                    ModelState.Remove($"StavkeTermina[{viewModel.StavkeTermina.IndexOf(stavka)}].UslugaId");
+                }
+            }
+
 
             if (!ModelState.IsValid)
             {
+                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
+                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
 
@@ -215,11 +247,15 @@ namespace BeautySalon.PresentationMVC.Controllers
                         ModelState.AddModelError(error.Key, msg);
                     }
                 }
+                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
+                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Došlo je do pogreške prilikom ažuriranja termina: {ex.Message}");
+                // Nema potrebe za ponovnim postavljanjem "ParentUsluge" ovdje.
+                // ViewData["ParentUsluge"] = viewModel.Usluge;
                 return View("Details", viewModel);
             }
         }
@@ -246,11 +282,33 @@ namespace BeautySalon.PresentationMVC.Controllers
             }
         }
 
+        // Nova metoda za vraćanje partial viewa za novu stavku termina.
+        [HttpGet]
+        public async Task<IActionResult> GetNewStavkaTerminaPartial(int index)
+        {
+            var model = new StavkaTerminaViewModel
+            {
+                Id = 0,
+                Kolicina = 1,
+                Cijena = 0.00m
+            };
+
+            var usluge = await _uslugaAppService.GetAllUslugeAsync();
+            var uslugeSelectList = new SelectList(usluge, "Id", "Naziv");
+
+            ViewData["Index"] = index;
+            // PROMJENA OVDJE: Koristi ključ "Usluge" umjesto "ParentUsluge"
+            ViewData["Usluge"] = uslugeSelectList; // Proslijedi SelectList za usluge
+
+            return PartialView("_StavkaTerminaPartial", model);
+        }
+
         // Pomoćna metoda za popunjavanje SelectListova
         private async Task PopulateDropdowns(TerminViewModel viewModel)
         {
             viewModel.Klijenti = new SelectList(await _korisnikAppService.GetKlijentiForLookupAsync(), "Id", "ImePrezime", viewModel.KlijentId);
             viewModel.Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime", viewModel.ZaposlenikId);
+            // Dodana linija za popunjavanje usluga u glavni ViewModel
             viewModel.Usluge = new SelectList(await _uslugaAppService.GetAllUslugeAsync(), "Id", "Naziv");
             viewModel.StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", viewModel.Status);
         }

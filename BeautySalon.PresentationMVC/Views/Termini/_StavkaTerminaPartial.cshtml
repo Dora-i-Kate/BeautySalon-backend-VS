@@ -1,30 +1,50 @@
-﻿@model BeautySalon.PresentationMVC.ViewModels.StavkaTerminaViewModel
-@using Microsoft.AspNetCore.Mvc.Rendering // Required for SelectList
-@using BeautySalon.PresentationMVC.ViewModels // Ensure this is present for your ViewModels
+﻿@* BeautySalon.PresentationMVC\Views\Termini\_StavkaTerminaPartial.cshtml *@
+
+@model BeautySalon.PresentationMVC.ViewModels.StavkaTerminaViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using BeautySalon.PresentationMVC.ViewModels
 
 @{
     var index = ViewData["Index"] as int?;
     var namePrefix = index.HasValue ? $"StavkeTermina[{index.Value}]" : "StavkeTermina[0]";
-    var uslugeSelectList = ViewData["ParentUsluge"] as SelectList;
+
+    // PROMJENA OVDJE: Dohvaćate uslugeSelectList iz ViewData dictionary-a,
+    // pod ključem "Usluge" (ili "ParentUsluge" ako se tako odluči, ali "Usluge" je konzistentnije)
+    var uslugeSelectList = ViewData["Usluge"] as SelectList; // <-- PROMJENA OVDJE: Ključ je "Usluge"
 }
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border p-4 rounded-md bg-gray-50 relative">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border p-4 rounded-md bg-gray-50 relative stavka-termina-item"
+     data-stavka-id="@Model.Id" @(Model.Id == 0 ? "data-is-new='true'" : "")>
+    @* Dodan data-is-new atribut samo za nove stavke *@
+
     <input type="hidden" name="@(namePrefix).Id" value="@Model.Id" />
+    <input type="hidden" name="@(namePrefix).UslugaNaziv" value="@Model.UslugaNaziv" />
+    <input type="hidden" name="@(namePrefix).UslugaId" value="@Model.UslugaId" />
+
     <div>
         <label for="@(namePrefix)__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
-        @if (Model.Id == 0) // If it's a new item (Id is 0), show the dropdown
-        {
+
+        @* Prikaz za postojeće stavke (display mode) *@
+        <div class="display-mode @(Model.Id == 0 ? "hidden" : "")">
+            @* Hidden samo ako je nova stavka *@
+            <p class="mt-1 block w-full input-field-readonly" data-usluga-naziv>@Model.UslugaNaziv</p>
+            @if (Model.Id != 0)
+            {
+                <button type="button" class="btn btn-secondary btn-sm mt-1 edit-stavka-btn">Uredi uslugu</button>
+            }
+        </div>
+
+        @* Prikaz za nove ili uređivane stavke (edit mode) *@
+        <div class="edit-mode @(Model.Id != 0 ? "hidden" : "")">
+            @* Hidden samo ako nije nova stavka *@
             <select name="@(namePrefix).UslugaId" id="@(namePrefix)__UslugaId" class="mt-1 block w-full input-field" asp-items="@uslugeSelectList">
                 <option value="">-- Odaberite uslugu --</option>
             </select>
-        }
-        else // If it's an existing item, show the name
-        {
-            <input type="hidden" name="@(namePrefix).UslugaId" value="@Model.UslugaId" />
-            <p class="mt-1 block w-full input-field-readonly">@Model.UslugaNaziv</p>
-        }
+            <button type="button" class="btn btn-secondary btn-sm mt-1 cancel-stavka-btn">Odustani</button>
+        </div>
         <span data-valmsg-for="@(namePrefix).UslugaId" class="validation-message"></span>
     </div>
+
     <div>
         <label for="@(namePrefix)__Kolicina" class="block text-sm font-medium text-gray-700">Količina</label>
         <input type="number" name="@(namePrefix).Kolicina" id="@(namePrefix)__Kolicina" value="@Model.Kolicina" class="mt-1 block w-full input-field" />

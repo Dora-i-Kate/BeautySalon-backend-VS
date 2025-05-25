@@ -174,9 +174,12 @@ namespace BeautySalon.PresentationMVC.Controllers
             }
         }
 
-        // BeautySalon.Web/Controllers/UslugeController.cs (DODATNA AKCIJA ZA DOHVAĆANJE CIJENE USLUGE PUTEM AJAXA)
-        // Dodajte ovu metodu unutar postojeće klase UslugeController
-        // Ovo je potrebno za JavaScript logiku u Terminima/Details.cshtml
+      
+        /// <summary>
+        /// Dohvaća cijenu usluge po ID-u. Koristi se za AJAX pozive u JavaScriptu na stranici termina.
+        /// </summary>
+        /// <param name="id">ID usluge.</param>
+        /// <returns>JSON objekt s cijenom usluge.</returns>
         [HttpGet]
         public async Task<IActionResult> GetUslugaPrice(int id)
         {
