@@ -5,7 +5,6 @@
 @{
     var index = ViewData["Index"] as int?;
     var namePrefix = index.HasValue ? $"StavkeTermina[{index.Value}]" : "StavkeTermina[0]";
-    // Get the SelectList passed from the parent view
     var uslugeSelectList = ViewData["ParentUsluge"] as SelectList;
 }
 
@@ -13,10 +12,17 @@
     <input type="hidden" name="@(namePrefix).Id" value="@Model.Id" />
     <div>
         <label for="@(namePrefix)__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
-        @* Corrected asp-items to use the passed SelectList *@
-        <select name="@(namePrefix).UslugaId" id="@(namePrefix)__UslugaId" class="mt-1 block w-full input-field" asp-items="@uslugeSelectList">
-            <option value="">-- Odaberite uslugu --</option>
-        </select>
+        @if (Model.Id == 0) // If it's a new item (Id is 0), show the dropdown
+        {
+            <select name="@(namePrefix).UslugaId" id="@(namePrefix)__UslugaId" class="mt-1 block w-full input-field" asp-items="@uslugeSelectList">
+                <option value="">-- Odaberite uslugu --</option>
+            </select>
+        }
+        else // If it's an existing item, show the name
+        {
+            <input type="hidden" name="@(namePrefix).UslugaId" value="@Model.UslugaId" />
+            <p class="mt-1 block w-full input-field-readonly">@Model.UslugaNaziv</p>
+        }
         <span data-valmsg-for="@(namePrefix).UslugaId" class="validation-message"></span>
     </div>
     <div>
