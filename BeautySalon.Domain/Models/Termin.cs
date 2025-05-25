@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using BeautySalon.Domain.Exceptions;
 
 namespace BeautySalon.Domain.Models
@@ -10,6 +12,8 @@ namespace BeautySalon.Domain.Models
     /// </summary>
     public class Termin
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; private set; } // termin_id
         public DateTime Datum { get; private set; }
         public TimeSpan Vrijeme { get; private set; }

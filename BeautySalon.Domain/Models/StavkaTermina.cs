@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +14,9 @@ namespace BeautySalon.Domain.Models
     /// </summary>
     public class StavkaTermina
     {
-        public int Id { get; private set; } // stavka_id
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // DODAJ OVU LINIJU
+        public int Id { get; set; } // stavka_id
         public int Kolicina { get; private set; }
         public decimal Cijena { get; private set; } // Cijena za tu stavku (može biti različita od Usluga.Cijena zbog popusta)
 

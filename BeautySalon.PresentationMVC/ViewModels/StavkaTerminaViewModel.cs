@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Xunit.Sdk;
+﻿// In BeautySalon.PresentationMVC.ViewModels/StavkaTerminaViewModel.cs
+
+using System.ComponentModel.DataAnnotations;
 
 namespace BeautySalon.PresentationMVC.ViewModels
 {
@@ -17,7 +18,9 @@ namespace BeautySalon.PresentationMVC.ViewModels
         public int UslugaId { get; set; }
 
         [Display(Name = "Naziv usluge")]
-        public string UslugaNaziv { get; set; } // Za prikaz
+        public string? UslugaNaziv { get; set; } // <-- MAKE IT NULLABLE
+                                                 // Or remove it if it's strictly not needed on the ViewModel,
+                                                 // but for display purposes, nullable is fine.
 
         [Required(ErrorMessage = "Količina je obavezna.")]
         [Range(1, int.MaxValue, ErrorMessage = "Količina mora biti barem 1.")]

@@ -1,32 +1,35 @@
 ﻿@model BeautySalon.PresentationMVC.ViewModels.StavkaTerminaViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering // Required for SelectList
+@using BeautySalon.PresentationMVC.ViewModels // Ensure this is present for your ViewModels
+
 @{
-    var index = ViewData["Index"]; // Index je proslijeđen iz glavnog viewa
+    var index = ViewData["Index"] as int?;
+    var namePrefix = index.HasValue ? $"StavkeTermina[{index.Value}]" : "StavkeTermina[0]";
+    // Get the SelectList passed from the parent view
+    var uslugeSelectList = ViewData["ParentUsluge"] as SelectList;
 }
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border p-4 rounded-md bg-gray-50 relative">
-    <input type="hidden" name="StavkeTermina[@(index)].Id" value="@Model.Id" />
+    <input type="hidden" name="@(namePrefix).Id" value="@Model.Id" />
     <div>
-        <label for="StavkeTermina_@(index)__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
-        <select name="StavkeTermina[@(index)].UslugaId" id="StavkeTermina_@(index)__UslugaId" class="mt-1 block w-full input-field">
+        <label for="@(namePrefix)__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
+        @* Corrected asp-items to use the passed SelectList *@
+        <select name="@(namePrefix).UslugaId" id="@(namePrefix)__UslugaId" class="mt-1 block w-full input-field" asp-items="@uslugeSelectList">
             <option value="">-- Odaberite uslugu --</option>
-            @foreach (var usluga in (SelectList)ViewData["Usluge"]) // Pristup SelectListu iz ViewData
-            {
-                <option value="@usluga.Value" selected="@(Model.UslugaId == int.Parse(usluga.Value))">@usluga.Text</option>
-            }
         </select>
-        <span data-valmsg-for="StavkeTermina[@(index)].UslugaId" class="validation-message"></span>
+        <span data-valmsg-for="@(namePrefix).UslugaId" class="validation-message"></span>
     </div>
     <div>
-        <label for="StavkeTermina_@(index)__Kolicina" class="block text-sm font-medium text-gray-700">Količina</label>
-        <input type="number" name="StavkeTermina[@(index)].Kolicina" id="StavkeTermina_@(index)__Kolicina" value="@Model.Kolicina" class="mt-1 block w-full input-field" />
-        <span data-valmsg-for="StavkeTermina[@(index)].Kolicina" class="validation-message"></span>
+        <label for="@(namePrefix)__Kolicina" class="block text-sm font-medium text-gray-700">Količina</label>
+        <input type="number" name="@(namePrefix).Kolicina" id="@(namePrefix)__Kolicina" value="@Model.Kolicina" class="mt-1 block w-full input-field" />
+        <span data-valmsg-for="@(namePrefix).Kolicina" class="validation-message"></span>
     </div>
     <div>
-        <label for="StavkeTermina_@(index)__Cijena" class="block text-sm font-medium text-gray-700">Cijena</label>
-        <input type="number" step="0.01" name="StavkeTermina[@(index)].Cijena" id="StavkeTermina_@(index)__Cijena" value="@Model.Cijena.ToString("F2")" class="mt-1 block w-full input-field" />
-        <span data-valmsg-for="StavkeTermina[@(index)].Cijena" class="validation-message"></span>
+        <label for="@(namePrefix)__Cijena" class="block text-sm font-medium text-gray-700">Cijena</label>
+        <input type="number" name="@(namePrefix).Cijena" id="@(namePrefix)__Cijena" value="@Model.Cijena.ToString("F2")" step="0.01" class="mt-1 block w-full input-field" readonly />
+        <span data-valmsg-for="@(namePrefix).Cijena" class="validation-message"></span>
     </div>
-    <div class="flex items-center justify-end">
-        <button type="button" class="btn btn-danger remove-stavka-btn">Ukloni</button>
-    </div>
+    <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 remove-stavka-btn">
+        <i class="fas fa-times-circle"></i>
+    </button>
 </div>

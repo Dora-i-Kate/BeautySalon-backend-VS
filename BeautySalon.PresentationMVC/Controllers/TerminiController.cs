@@ -4,7 +4,7 @@ using BeautySalon.Domain.Exceptions;
 using BeautySalon.Domain.Models;
 using BeautySalon.PresentationMVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering; // Ensure this is present
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
@@ -66,15 +66,15 @@ namespace BeautySalon.PresentationMVC.Controllers
                     UslugaNaziv = st.UslugaNaziv,
                     Kolicina = st.Kolicina,
                     Cijena = st.Cijena
-                }).ToList(),
-                Klijenti = new SelectList(await _korisnikAppService.GetKlijentiForLookupAsync(), "Id", "ImePrezime", terminDto.KlijentId),
-                Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime", terminDto.ZaposlenikId),
-                Usluge = new SelectList(await _uslugaAppService.GetAllUslugeAsync(), "Id", "Naziv"),
-                StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", terminDto.Status)
+                }).ToList()
             };
+
+            // Popuni SelectListe za Details/Edit view
+            await PopulateDropdowns(viewModel);
 
             return View(viewModel);
         }
+
 
         // GET: Termini/Create
         public async Task<IActionResult> Create()
@@ -85,12 +85,14 @@ namespace BeautySalon.PresentationMVC.Controllers
                 Vrijeme = TimeSpan.FromHours(9), // Predpopuni 9:00
                 TrajanjeMinuta = 60, // Predpopuni 60 minuta
                 Status = TerminStatus.Zakazan, // Predpopuni status
-                Klijenti = new SelectList(await _korisnikAppService.GetKlijentiForLookupAsync(), "Id", "ImePrezime"),
-                Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime"),
-                Usluge = new SelectList(await _uslugaAppService.GetAllUslugeAsync(), "Id", "Naziv"),
-                StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", TerminStatus.Zakazan)
+                StavkeTermina = new List<StavkaTerminaViewModel>() // KLJUČNA INICIJALIZACIJA ZA NOVI TERMIN
             };
-            return View("Details", viewModel); // Koristi isti Details view za Create i Edit
+
+            await PopulateDropdowns(viewModel); // Popuni SelectListe
+
+            // Ako koristite isti 'Details' view za Create i Edit, ovo je u redu.
+            // Inače biste vratili View("Create", viewModel);
+            return View("Details", viewModel);
         }
 
         // POST: Termini/Create
@@ -99,10 +101,13 @@ namespace BeautySalon.PresentationMVC.Controllers
         public async Task<IActionResult> Create(TerminViewModel viewModel)
         {
             // Ponovno popuni SelectListe u slučaju greške validacije
-            viewModel.Klijenti = new SelectList(await _korisnikAppService.GetKlijentiForLookupAsync(), "Id", "ImePrezime", viewModel.KlijentId);
-            viewModel.Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime", viewModel.ZaposlenikId);
-            viewModel.Usluge = new SelectList(await _uslugaAppService.GetAllUslugeAsync(), "Id", "Naziv");
-            viewModel.StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", viewModel.Status);
+            await PopulateDropdowns(viewModel);
+
+            // Dodatna provjera ako model binder nije uspio vezati stavke termina (npr. prazna lista)
+            if (viewModel.StavkeTermina == null)
+            {
+                viewModel.StavkeTermina = new List<StavkaTerminaViewModel>();
+            }
 
             if (!ModelState.IsValid)
             {
@@ -159,10 +164,13 @@ namespace BeautySalon.PresentationMVC.Controllers
             }
 
             // Ponovno popuni SelectListe u slučaju greške validacije
-            viewModel.Klijenti = new SelectList(await _korisnikAppService.GetKlijentiForLookupAsync(), "Id", "ImePrezime", viewModel.KlijentId);
-            viewModel.Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime", viewModel.ZaposlenikId);
-            viewModel.Usluge = new SelectList(await _uslugaAppService.GetAllUslugeAsync(), "Id", "Naziv");
-            viewModel.StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", viewModel.Status);
+            await PopulateDropdowns(viewModel);
+
+            // Dodatna provjera ako model binder nije uspio vezati stavke termina (npr. prazna lista)
+            if (viewModel.StavkeTermina == null)
+            {
+                viewModel.StavkeTermina = new List<StavkaTerminaViewModel>();
+            }
 
 
             if (!ModelState.IsValid)
@@ -236,6 +244,15 @@ namespace BeautySalon.PresentationMVC.Controllers
                 TempData["ErrorMessage"] = $"Došlo je do pogreške prilikom brisanja termina: {ex.Message}";
                 return RedirectToAction(nameof(Details), new { id = id });
             }
+        }
+
+        // Pomoćna metoda za popunjavanje SelectListova
+        private async Task PopulateDropdowns(TerminViewModel viewModel)
+        {
+            viewModel.Klijenti = new SelectList(await _korisnikAppService.GetKlijentiForLookupAsync(), "Id", "ImePrezime", viewModel.KlijentId);
+            viewModel.Zaposlenici = new SelectList(await _korisnikAppService.GetZaposleniciForLookupAsync(), "Id", "ImePrezime", viewModel.ZaposlenikId);
+            viewModel.Usluge = new SelectList(await _uslugaAppService.GetAllUslugeAsync(), "Id", "Naziv");
+            viewModel.StatusiTermina = new SelectList(Enum.GetValues(typeof(TerminStatus)).Cast<TerminStatus>().Select(e => new { Id = (int)e, Name = e.ToString() }), "Id", "Name", viewModel.Status);
         }
     }
 }

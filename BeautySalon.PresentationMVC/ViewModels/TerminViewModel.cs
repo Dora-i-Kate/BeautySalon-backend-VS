@@ -47,10 +47,10 @@ namespace BeautySalon.PresentationMVC.ViewModels
         public decimal UkupnaCijena { get; set; }
 
         // Za padajuće liste
-        public SelectList Klijenti { get; set; }
-        public SelectList Zaposlenici { get; set; }
-        public SelectList Usluge { get; set; } // Za stavke termina
-        public SelectList StatusiTermina { get; set; } // Za status termina
+        public SelectList? Klijenti { get; set; }
+        public SelectList? Zaposlenici { get; set; }
+        public SelectList? Usluge { get; set; } // Za stavke termina
+        public SelectList? StatusiTermina { get; set; } // Za status termina
 
         // Za pretraživanje (opcionalno, može biti i zaseban ViewModel)
         [Display(Name = "Pretraži po datumu od")]
