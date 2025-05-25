@@ -17,11 +17,25 @@ namespace BeautySalon.PresentationMVC.Controllers
             _service = service;
         }
 
-        public async Task<IActionResult> Index()
+        //public async Task<IActionResult> Index()
+        //{
+        //    var usluge = await _service.GetAllAsync();
+        //    var viewModels = usluge.Select(MapToViewModel).ToList();
+        //    return View("UslugaIndex", viewModels);
+        //}
+
+        public async Task<IActionResult> Index(string? searchTerm)
         {
-            var usluge = await _service.GetAllAsync();
+            var usluge = await _service.SearchAsync(searchTerm);
             var viewModels = usluge.Select(MapToViewModel).ToList();
-            return View("UslugaIndex", viewModels);
+
+            var model = new UslugaSearchViewModel
+            {
+                SearchTerm = searchTerm,
+                Usluge = viewModels
+            };
+
+            return View("UslugaIndex", model);
         }
 
         public async Task<IActionResult> Details(int id)

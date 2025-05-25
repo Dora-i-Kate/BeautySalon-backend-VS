@@ -17,5 +17,6 @@ namespace BeautySalon.Application.Interfaces
         Task AddAsync(UslugaDto usluga);
         Task UpdateAsync(UslugaDto usluga);
         Task DeleteAsync(int id);
+        Task<List<UslugaDto>> SearchAsync(string? searchTerm);
     }
 }

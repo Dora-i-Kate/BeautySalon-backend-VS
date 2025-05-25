@@ -1,16 +1,23 @@
-﻿@model IEnumerable<BeautySalon.PresentationMVC.Models.UslugaViewModel>
+﻿@model BeautySalon.PresentationMVC.Models.UslugaSearchViewModel
 
 @{
     ViewData["Title"] = "Popis usluga";
 }
 
-<h1>Šifrarnik usluga</h1>
+<h1 style="margin-bottom:30px;">Šifrarnik usluga</h1>
 
-<div>
-    <a asp-action="Create" class="btn btn-primary">Dodaj novu uslugu</a>
-    <button id="editBtn" disabled class="btn btn-primary">Uredi</button>
-    <button id="detailsBtn" disabled class="btn btn-info">Detalji</button>
-    <button id="deleteBtn" disabled class="btn btn-danger">Obriši</button>
+<div style="display:flex; justify-content:space-between; margin-bottom:30px">
+    <div style="display:flex; align-items:center; gap:5px;">
+        <a asp-action="Create" class="btn btn-primary">Dodaj novu uslugu</a>
+        <button id="editBtn" disabled class="btn btn-warning">Uredi</button>
+        <button id="detailsBtn" disabled class="btn btn-info">Detalji</button>
+        <button id="deleteBtn" disabled class="btn btn-danger">Obriši</button>
+    </div>
+    <form method="get" asp-action="Index" class="form-inline" style="display:flex; align-items:center; gap:5px;">
+        <input style="height:100%; border:1px solid lightgray; border-radius:5px; padding:0px 10px 0px 10px;" type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Pretraži usluge..." />
+        <button type="submit" class="btn btn-secondary">Pretraži</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Poništi</a>
+    </form>
 </div>
 
 <table class="table" id="uslugeTable">
@@ -24,7 +31,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.Usluge)
         {
             <tr data-id="@item.UslugaId" style="cursor:pointer;">
                 <td>@item.UslugaId</td>

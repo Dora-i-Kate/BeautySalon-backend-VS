@@ -88,5 +88,24 @@ namespace BeautySalon.Application.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<UslugaDto>> SearchAsync(string? searchTerm)
+        {
+            var query = _context.Usluga.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                query = query.Where(u => u.Naziv.Contains(searchTerm) || u.Opis != null && u.Opis.Contains(searchTerm));
+
+            var result = await query.ToListAsync();
+
+            return result.Select(u => new UslugaDto
+            {
+                UslugaId = u.UslugaId,
+                Naziv = u.Naziv,
+                Opis = u.Opis,
+                Trajanje = u.Trajanje,
+                Cijena = u.Cijena
+            }).ToList();
+        }
     }
 }
