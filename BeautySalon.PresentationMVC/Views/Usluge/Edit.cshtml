@@ -1,0 +1,50 @@
+﻿@model BeautySalon.PresentationMVC.ViewModels.UslugaViewModel
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Kreiraj uslugu" : "Uredi uslugu";
+}
+
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
+
+    <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="space-y-4">
+            <div>
+                <label asp-for="Naziv" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Naziv" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="Naziv" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="Opis" class="block text-sm font-medium text-gray-700"></label>
+                <textarea asp-for="Opis" rows="4" class="mt-1 block w-full input-field"></textarea>
+                <span asp-validation-for="Opis" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="Cijena" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Cijena" type="number" step="0.01" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="Cijena" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="TrajanjeMinuta" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="TrajanjeMinuta" type="number" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="TrajanjeMinuta" class="validation-message"></span>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+            <a asp-action="Index" class="btn btn-secondary">Natrag na popis</a>
+            <button type="submit" class="btn btn-primary">Spremi</button>
+        </div>
+
+        <div asp-validation-summary="All" class="validation-message mt-4"></div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

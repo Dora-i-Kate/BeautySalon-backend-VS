@@ -1,0 +1,69 @@
+﻿@model IEnumerable<BeautySalon.PresentationMVC.ViewModels.UslugaViewModel>
+
+@{
+    ViewData["Title"] = "Popis usluga";
+}
+
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Popis usluga</h1>
+
+    <div class="mb-6">
+        <form asp-action="Index" method="get" class="flex space-x-3">
+            <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Pretraži po nazivu ili opisu" class="input-field flex-grow" />
+            <button type="submit" class="btn btn-primary">Pretraži</button>
+            <a asp-action="Index" class="btn btn-secondary">Poništi filter</a>
+        </form>
+    </div>
+
+    <p class="mb-4">
+        <a asp-action="Create" class="btn btn-primary">Kreiraj novu uslugu</a>
+    </p>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Naziv usluge</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opis usluge</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cijena</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trajanje (min)</th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Akcije</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                @item.Naziv
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @(item.Opis?.Length > 50 ? item.Opis.Substring(0, 50) + "..." : item.Opis)
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @item.Cijena.ToString("C")
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @item.TrajanjeMinuta
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="text-indigo-600 hover:text-indigo-900 mr-4">Uredi</a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="inline" onsubmit="return confirm('Jeste li sigurni da želite obrisati ovu uslugu?');">
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Obriši</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p class="text-gray-600">Nema pronađenih usluga.</p>
+    }
+</div>

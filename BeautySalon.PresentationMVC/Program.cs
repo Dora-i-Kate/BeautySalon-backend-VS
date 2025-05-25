@@ -2,6 +2,8 @@ using BeautySalon.Application.Interfaces;
 using BeautySalon.Application.Services;
 using BeautySalon.DataAccess;
 using BeautySalon.DataAccess.Repositories;
+using BeautySalon.Domain.Interfaces;
+using BeautySalon.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,29 +15,29 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<BeautySalonDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Repozitoriji
-builder.Services.AddScoped<IKlijentRepository, KlijentRepository>();
-builder.Services.AddScoped<IZaposlenikRepository, ZaposlenikRepository>();
+// Registracija repozitorija (DataAccess Layer)
+builder.Services.AddScoped<IKorisnikRepository, KorisnikRepository>();
 builder.Services.AddScoped<ITerminRepository, TerminRepository>();
+builder.Services.AddScoped<IUlogaRepository, UlogaRepository>();
+builder.Services.AddScoped<IUslugaRepository, UslugaRepository>();
 
-// Servisi
-builder.Services.AddScoped<IKlijentService, KlijentService>();
-builder.Services.AddScoped<ITerminService, TerminService>();
-builder.Services.AddScoped<IZaposlenikService, ZaposlenikService>();
+// Registracija domenskih validatora (Domain Layer)
+builder.Services.AddScoped<TerminValidator>();
+builder.Services.AddScoped<UslugaValidator>();
+
+// Registracija aplikacijskih servisa (Application Layer)
+builder.Services.AddScoped<ITerminAppService, TerminAppService>();
+builder.Services.AddScoped<IUslugaAppService, UslugaAppService>();
+builder.Services.AddScoped<IKorisnikAppService, KorisnikAppService>();
 
 var app = builder.Build();
 
-// Middleware konfiguracija
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler(errorApp =>
-    {
-        errorApp.Run(async context =>
-        {
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("Došlo je do pogreške.");
-        });
-    });
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -47,6 +49,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Klijent}/{action=Detalji}/{klijentId?}"); // Default akcija: Detalji
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

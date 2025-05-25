@@ -1,0 +1,189 @@
+﻿@model BeautySalon.PresentationMVC.ViewModels.TerminViewModel
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Kreiraj termin" : "Detalji termina";
+}
+
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
+
+    <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <label asp-for="Datum" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Datum" type="date" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="Datum" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="Vrijeme" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Vrijeme" type="time" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="Vrijeme" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="TrajanjeMinuta" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="TrajanjeMinuta" type="number" class="mt-1 block w-full input-field" />
+                <span asp-validation-for="TrajanjeMinuta" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="Status" class="block text-sm font-medium text-gray-700"></label>
+                <select asp-for="Status" asp-items="Model.StatusiTermina" class="mt-1 block w-full input-field"></select>
+                <span asp-validation-for="Status" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="KlijentId" class="block text-sm font-medium text-gray-700"></label>
+                <select asp-for="KlijentId" asp-items="Model.Klijenti" class="mt-1 block w-full input-field">
+                    <option value="">-- Odaberite klijenta --</option>
+                </select>
+                <span asp-validation-for="KlijentId" class="validation-message"></span>
+            </div>
+            <div>
+                <label asp-for="ZaposlenikId" class="block text-sm font-medium text-gray-700"></label>
+                <select asp-for="ZaposlenikId" asp-items="Model.Zaposlenici" class="mt-1 block w-full input-field">
+                    <option value="">-- Odaberite zaposlenika --</option>
+                </select>
+                <span asp-validation-for="ZaposlenikId" class="validation-message"></span>
+            </div>
+        </div>
+
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Stavke termina</h2>
+        <div id="stavkeTerminaContainer" class="space-y-4 mb-6">
+            @if (Model.StavkeTermina != null)
+            {
+                for (int i = 0; i < Model.StavkeTermina.Count; i++)
+                {
+                    @Html.Partial("_StavkaTerminaPartial", Model.StavkeTermina[i], new ViewDataDictionary(ViewData) { { "Index", i } })
+                }
+            }
+        </div>
+
+        <button type="button" id="addStavkaBtn" class="btn btn-secondary mb-6">Dodaj stavku</button>
+
+        <div class="text-right text-lg font-bold text-gray-800 mb-6">
+            Ukupna cijena: <span id="ukupnaCijenaDisplay">@Model.UkupnaCijena.ToString("C")</span>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <a asp-action="Index" class="btn btn-secondary">Natrag na popis</a>
+            <button type="submit" class="btn btn-primary">Spremi</button>
+            @if (Model.Id != 0)
+            {
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="inline" onsubmit="return confirm('Jeste li sigurni da želite obrisati ovaj termin?');">
+                    <button type="submit" class="btn btn-danger">Obriši</button>
+                </form>
+            }
+        </div>
+
+        <div asp-validation-summary="All" class="validation-message mt-4"></div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // JavaScript za dinamičko dodavanje/uklanjanje stavki termina
+        let stavkaIndex = @(Model.StavkeTermina?.Count ?? 0); // Početni indeks za nove stavke
+
+        document.getElementById('addStavkaBtn').addEventListener('click', function () {
+            const container = document.getElementById('stavkeTerminaContainer');
+            const newStavkaHtml = `
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border p-4 rounded-md bg-gray-50 relative">
+                            <input type="hidden" name="StavkeTermina[${stavkaIndex}].Id" value="0" />
+                            <div>
+                                <label for="StavkeTermina_${stavkaIndex}__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
+                                <select name="StavkeTermina[${stavkaIndex}].UslugaId" id="StavkeTermina_${stavkaIndex}__UslugaId" class="mt-1 block w-full input-field">
+                                    <option value="">-- Odaberite uslugu --</option>
+        @foreach (var usluga in Model.Usluge)
+        {
+                                            <option value="@usluga.Value">@usluga.Text</option>
+        }
+                                </select>
+                                <span data-valmsg-for="StavkeTermina[${stavkaIndex}].UslugaId" class="validation-message"></span>
+                            </div>
+                            <div>
+                                <label for="StavkeTermina_${stavkaIndex}__Kolicina" class="block text-sm font-medium text-gray-700">Količina</label>
+                                <input type="number" name="StavkeTermina[${stavkaIndex}].Kolicina" id="StavkeTermina_${stavkaIndex}__Kolicina" value="1" class="mt-1 block w-full input-field" />
+                                <span data-valmsg-for="StavkeTermina[${stavkaIndex}].Kolicina" class="validation-message"></span>
+                            </div>
+                            <div>
+                                <label for="StavkeTermina_${stavkaIndex}__Cijena" class="block text-sm font-medium text-gray-700">Cijena</label>
+                                <input type="number" step="0.01" name="StavkeTermina[${stavkaIndex}].Cijena" id="StavkeTermina_${stavkaIndex}__Cijena" value="0.00" class="mt-1 block w-full input-field" />
+                                <span data-valmsg-for="StavkeTermina[${stavkaIndex}].Cijena" class="validation-message"></span>
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <button type="button" class="btn btn-danger remove-stavka-btn">Ukloni</button>
+                            </div>
+                        </div>
+                    `;
+            container.insertAdjacentHTML('beforeend', newStavkaHtml);
+            stavkaIndex++;
+            attachRemoveListeners();
+            attachPriceUpdateListeners(); // Attach listener for new row
+            calculateUkupnaCijena(); // Recalculate total
+        });
+
+        function attachRemoveListeners() {
+            document.querySelectorAll('.remove-stavka-btn').forEach(button => {
+                button.onclick = function () {
+                    this.closest('.grid').remove();
+                    calculateUkupnaCijena(); // Recalculate total after removal
+                };
+            });
+        }
+
+        function attachPriceUpdateListeners() {
+            document.querySelectorAll('[name$=".UslugaId"]').forEach(select => {
+                select.onchange = async function () {
+                    const selectedUslugaId = this.value;
+                    const stavkaRow = this.closest('.grid');
+                    const cijenaInput = stavkaRow.querySelector('[name$=".Cijena"]');
+
+                    if (selectedUslugaId) {
+                        try {
+                            const response = await fetch(`/Usluge/GetUslugaPrice/${selectedUslugaId}`);
+                            if (response.ok) {
+                                const usluga = await response.json();
+                                cijenaInput.value = usluga.cijena.toFixed(2); // Set price
+                            } else {
+                                console.error('Failed to fetch usluga price');
+                                cijenaInput.value = '0.00';
+                            }
+                        } catch (error) {
+                            console.error('Error fetching usluga price:', error);
+                            cijenaInput.value = '0.00';
+                        }
+                    } else {
+                        cijenaInput.value = '0.00';
+                    }
+                    calculateUkupnaCijena(); // Recalculate total
+                };
+            });
+
+            document.querySelectorAll('[name$=".Kolicina"], [name$=".Cijena"]').forEach(input => {
+                input.oninput = calculateUkupnaCijena; // Recalculate on quantity/price change
+            });
+        }
+
+        function calculateUkupnaCijena() {
+            let total = 0;
+            document.querySelectorAll('#stavkeTerminaContainer > div').forEach(row => {
+                const kolicina = parseFloat(row.querySelector('[name$=".Kolicina"]').value) || 0;
+                const cijena = parseFloat(row.querySelector('[name$=".Cijena"]').value) || 0;
+                total += kolicina * cijena;
+            });
+            document.getElementById('ukupnaCijenaDisplay').textContent = total.toFixed(2) + ' €'; // Format as currency
+            document.getElementById('UkupnaCijena').value = total.toFixed(2); // Update hidden field if needed
+        }
+
+        // Initial attachment of listeners for existing items
+        document.addEventListener('DOMContentLoaded', () => {
+            attachRemoveListeners();
+            attachPriceUpdateListeners();
+            calculateUkupnaCijena(); // Calculate initial total on page load
+        });
+    </script>
+}

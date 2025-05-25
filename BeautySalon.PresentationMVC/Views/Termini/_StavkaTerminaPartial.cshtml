@@ -1,0 +1,32 @@
+﻿@model BeautySalon.PresentationMVC.ViewModels.StavkaTerminaViewModel
+@{
+    var index = ViewData["Index"]; // Index je proslijeđen iz glavnog viewa
+}
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border p-4 rounded-md bg-gray-50 relative">
+    <input type="hidden" name="StavkeTermina[@(index)].Id" value="@Model.Id" />
+    <div>
+        <label for="StavkeTermina_@(index)__UslugaId" class="block text-sm font-medium text-gray-700">Usluga</label>
+        <select name="StavkeTermina[@(index)].UslugaId" id="StavkeTermina_@(index)__UslugaId" class="mt-1 block w-full input-field">
+            <option value="">-- Odaberite uslugu --</option>
+            @foreach (var usluga in (SelectList)ViewData["Usluge"]) // Pristup SelectListu iz ViewData
+            {
+                <option value="@usluga.Value" selected="@(Model.UslugaId == int.Parse(usluga.Value))">@usluga.Text</option>
+            }
+        </select>
+        <span data-valmsg-for="StavkeTermina[@(index)].UslugaId" class="validation-message"></span>
+    </div>
+    <div>
+        <label for="StavkeTermina_@(index)__Kolicina" class="block text-sm font-medium text-gray-700">Količina</label>
+        <input type="number" name="StavkeTermina[@(index)].Kolicina" id="StavkeTermina_@(index)__Kolicina" value="@Model.Kolicina" class="mt-1 block w-full input-field" />
+        <span data-valmsg-for="StavkeTermina[@(index)].Kolicina" class="validation-message"></span>
+    </div>
+    <div>
+        <label for="StavkeTermina_@(index)__Cijena" class="block text-sm font-medium text-gray-700">Cijena</label>
+        <input type="number" step="0.01" name="StavkeTermina[@(index)].Cijena" id="StavkeTermina_@(index)__Cijena" value="@Model.Cijena.ToString("F2")" class="mt-1 block w-full input-field" />
+        <span data-valmsg-for="StavkeTermina[@(index)].Cijena" class="validation-message"></span>
+    </div>
+    <div class="flex items-center justify-end">
+        <button type="button" class="btn btn-danger remove-stavka-btn">Ukloni</button>
+    </div>
+</div>
