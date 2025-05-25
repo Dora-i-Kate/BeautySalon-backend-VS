@@ -7,6 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="BeautySalon.Tests" />
 	</ItemGroup>
 
 </Project>
