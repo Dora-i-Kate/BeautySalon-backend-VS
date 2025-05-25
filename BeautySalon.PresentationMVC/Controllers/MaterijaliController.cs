@@ -82,7 +82,7 @@ namespace BeautySalon.PresentationMVC.Controllers
                     MinimalnaKolicina = model.MinimalnaKolicina ?? 0,
                     TrenutnaKolicina = model.TrenutnaKolicina ?? 0,
                     JedinicaMjere = model.JedinicaMjere ?? "",
-                    VrstaId = model.VrstaId.Value
+                    VrstaId = model.VrstaId ?? 0
                 };
                 try
                 {
@@ -134,7 +134,7 @@ namespace BeautySalon.PresentationMVC.Controllers
                         MinimalnaKolicina = model.MinimalnaKolicina ?? 0,
                         TrenutnaKolicina = model.TrenutnaKolicina ?? 0,
                         JedinicaMjere = model.JedinicaMjere ?? "",
-                        VrstaId = model.VrstaId.Value
+                        VrstaId = model.VrstaId ?? 0
                     });
                     return RedirectToAction(nameof(Index));
                 }
