@@ -7,25 +7,26 @@
 <h1>Dodaj novu uslugu</h1>
 
 <form asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="form-group">
         <label asp-for="Naziv" class="control-label"></label>
         <input asp-for="Naziv" class="form-control" />
+        <span asp-validation-for="Naziv" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Opis" class="control-label"></label>
         <textarea asp-for="Opis" class="form-control"></textarea>
+        <span asp-validation-for="Opis" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Trajanje" class="control-label"></label>
         <input asp-for="Trajanje" class="form-control" />
+        <span asp-validation-for="Trajanje" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Cijena" class="control-label"></label>
         <input asp-for="Cijena" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="Prikaz" class="control-label"></label>
-        <input asp-for="Prikaz" class="form-control" />
+        <span asp-validation-for="Cijena" class="text-danger"></span>
     </div>
     <br />
     <button type="submit" class="btn btn-success">Spremi</button>

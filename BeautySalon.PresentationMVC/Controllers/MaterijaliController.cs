@@ -5,6 +5,7 @@ using BeautySalon.Domain.Models;
 using BeautySalon.PresentationMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using BeautySalon.Application.DTOs;
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
@@ -36,7 +37,7 @@ namespace BeautySalon.PresentationMVC.Controllers
                 MinimalnaKolicina = m.MinimalnaKolicina,
                 TrenutnaKolicina = m.TrenutnaKolicina,
                 JedinicaMjere = m.JedinicaMjere,
-                VrstaNaziv = m.VrstaMaterijala?.Naziv
+                VrstaNaziv = m.VrstaNaziv
             }).ToList();
 
             return View("MaterijalIndex", viewModel);
@@ -56,7 +57,7 @@ namespace BeautySalon.PresentationMVC.Controllers
                 TrenutnaKolicina = m.TrenutnaKolicina,
                 JedinicaMjere = m.JedinicaMjere,
                 VrstaId = m.VrstaId,
-                VrstaNaziv = m.VrstaMaterijala?.Naziv
+                VrstaNaziv = m.VrstaNaziv
             });
         }
 
@@ -74,14 +75,14 @@ namespace BeautySalon.PresentationMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var materijal = new Materijal
+                var materijal = new MaterijalDto
                 {
                     Naziv = model.Naziv ?? "",
-                    Cijena = model.Cijena,
-                    MinimalnaKolicina = model.MinimalnaKolicina,
-                    TrenutnaKolicina = model.TrenutnaKolicina,
+                    Cijena = model.Cijena ?? 0,
+                    MinimalnaKolicina = model.MinimalnaKolicina ?? 0,
+                    TrenutnaKolicina = model.TrenutnaKolicina ?? 0,
                     JedinicaMjere = model.JedinicaMjere ?? "",
-                    VrstaId = model.VrstaId
+                    VrstaId = model.VrstaId.Value
                 };
                 try
                 {
@@ -125,15 +126,15 @@ namespace BeautySalon.PresentationMVC.Controllers
             {
                 try
                 {
-                    await _service.UpdateAsync(new Materijal
+                    await _service.UpdateAsync(new MaterijalDto
                     {
                         MaterijalId = model.MaterijalId,
                         Naziv = model.Naziv ?? "",
-                        Cijena = model.Cijena,
-                        MinimalnaKolicina = model.MinimalnaKolicina,
-                        TrenutnaKolicina = model.TrenutnaKolicina,
+                        Cijena = model.Cijena ?? 0,
+                        MinimalnaKolicina = model.MinimalnaKolicina ?? 0,
+                        TrenutnaKolicina = model.TrenutnaKolicina ?? 0,
                         JedinicaMjere = model.JedinicaMjere ?? "",
-                        VrstaId = model.VrstaId
+                        VrstaId = model.VrstaId.Value
                     });
                     return RedirectToAction(nameof(Index));
                 }

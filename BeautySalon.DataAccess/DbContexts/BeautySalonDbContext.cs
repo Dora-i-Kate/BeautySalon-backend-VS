@@ -13,7 +13,7 @@ namespace BeautySalon.DataAccess.DbContexts
     {
         public SalonDbContext(DbContextOptions<SalonDbContext> options) : base(options) { }
 
-        public DbSet<Usluga> Usluge { get; set; }
+        public DbSet<Usluga> Usluga { get; set; }
         public DbSet<Materijal> Materijal { get; set; }
         public DbSet<VrstaMaterijala> VrstaMaterijala { get; set; }
 

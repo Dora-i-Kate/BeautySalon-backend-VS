@@ -7,23 +7,26 @@ namespace BeautySalon.PresentationMVC.Models
     {
         public int MaterijalId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Naziv je obavezan.")]
         public string? Naziv { get; set; }
 
-        [Range(0.01, 10000)]
-        public decimal Cijena { get; set; }
+        [Required(ErrorMessage = "Cijena je obavezna.")]
+        [Range(0.1, 10000, ErrorMessage = "Cijena mora biti između €0.1 i €10000")]
+        public decimal? Cijena { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int MinimalnaKolicina { get; set; }
+        [Required(ErrorMessage = "Minimalna količina je obavezna.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Minimalna količina mora biti veća od 1")]
+        public int? MinimalnaKolicina { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int TrenutnaKolicina { get; set; }
+        [Required(ErrorMessage = "Trenutna količina je obavezna.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Trenutna količina mora biti veća od 1")]
+        public int? TrenutnaKolicina { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Jedinica mjere je obavezna.")]
         public string? JedinicaMjere { get; set; }
 
-        [Required]
-        public int VrstaId { get; set; }
+        [Required(ErrorMessage = "Vrsta materijala je obavezna.")]
+        public int? VrstaId { get; set; }
         public string? VrstaNaziv { get; set; }
         public SelectList? VrsteMaterijala { get; set; }
     }

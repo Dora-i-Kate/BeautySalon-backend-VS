@@ -4,15 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BeautySalon.Application.DTOs;
 
 namespace BeautySalon.Application.Interfaces
 {
     public interface IMaterijalService
     {
-        Task<List<Materijal>> GetAllAsync();
-        Task<Materijal?> GetByIdAsync(int id);
-        Task CreateAsync(Materijal materijal);
-        Task UpdateAsync(Materijal materijal);
+        Task<List<MaterijalDto>> GetAllAsync();
+        Task<MaterijalDto?> GetByIdAsync(int id);
+        Task CreateAsync(MaterijalDto materijal);
+        Task UpdateAsync(MaterijalDto materijal);
         Task DeleteAsync(int id);
     }
 }

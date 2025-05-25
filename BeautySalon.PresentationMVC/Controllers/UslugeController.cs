@@ -4,6 +4,7 @@ using BeautySalon.DataAccess.DbContexts;
 using BeautySalon.Domain.Models;
 using BeautySalon.PresentationMVC.Models;
 using Microsoft.AspNetCore.Mvc;
+using BeautySalon.Application.DTOs;
 
 namespace BeautySalon.PresentationMVC.Controllers
 {
@@ -27,15 +28,15 @@ namespace BeautySalon.PresentationMVC.Controllers
         {
             var usluga = await _service.GetByIdAsync(id);
             if (usluga == null) return NotFound();
-            return View(MapToViewModel(usluga));
+            return View("UslugaDetails", MapToViewModel(usluga));
         }
 
-        public IActionResult Create() => View();
+        public IActionResult Create() => View("UslugaCreate");
 
         [HttpPost]
         public async Task<IActionResult> Create(UslugaViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid) return View("UslugaCreate", model);
             await _service.AddAsync(MapToDomain(model));
             return RedirectToAction(nameof(Index));
         }
@@ -44,13 +45,13 @@ namespace BeautySalon.PresentationMVC.Controllers
         {
             var usluga = await _service.GetByIdAsync(id);
             if (usluga == null) return NotFound();
-            return View(MapToViewModel(usluga));
+            return View("UslugaEdit", MapToViewModel(usluga));
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(UslugaViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid) return View("UslugaEdit", model);
             await _service.UpdateAsync(MapToDomain(model));
             return RedirectToAction(nameof(Index));
         }
@@ -59,7 +60,7 @@ namespace BeautySalon.PresentationMVC.Controllers
         {
             var usluga = await _service.GetByIdAsync(id);
             if (usluga == null) return NotFound();
-            return View(MapToViewModel(usluga));
+            return View("UslugaDelete", MapToViewModel(usluga));
         }
 
         [HttpPost, ActionName("Delete")]
@@ -70,24 +71,22 @@ namespace BeautySalon.PresentationMVC.Controllers
         }
 
         // Helper metode
-        private UslugaViewModel MapToViewModel(Usluga usluga) => new()
+        private UslugaViewModel MapToViewModel(UslugaDto usluga) => new()
         {
             UslugaId = usluga.UslugaId,
             Naziv = usluga.Naziv,
             Opis = usluga.Opis,
             Trajanje = usluga.Trajanje,
-            Cijena = usluga.Cijena,
-            Prikaz = usluga.Prikaz == null ? "N/A" : usluga.Prikaz
+            Cijena = usluga.Cijena
         };
 
-        private Usluga MapToDomain(UslugaViewModel model) => new()
+        private UslugaDto MapToDomain(UslugaViewModel model) => new()
         {
             UslugaId = model.UslugaId,
             Naziv = model.Naziv,
             Opis = model.Opis,
-            Trajanje = model.Trajanje,
-            Cijena = model.Cijena,
-            Prikaz = model.Prikaz
+            Trajanje = model.Trajanje ?? 0,
+            Cijena = model.Cijena ?? 0
         };
     }
 }

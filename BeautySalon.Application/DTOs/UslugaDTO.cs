@@ -1,6 +1,12 @@
-namespace BeautySalon.Domain.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BeautySalon.Application.DTOs
 {
-    public class Usluga
+    public class UslugaDto
     {
         public int UslugaId { get; set; }
         public required string Naziv { get; set; }

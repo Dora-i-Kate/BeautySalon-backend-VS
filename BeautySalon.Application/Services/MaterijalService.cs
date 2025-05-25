@@ -1,4 +1,5 @@
-﻿using BeautySalon.Application.Interfaces;
+﻿using BeautySalon.Application.DTOs;
+using BeautySalon.Application.Interfaces;
 using BeautySalon.DataAccess.DbContexts;
 using BeautySalon.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -19,25 +20,76 @@ namespace BeautySalon.Application.Services
             _context = context;
         }
 
-        public async Task<List<Materijal>> GetAllAsync()
-            => await _context.Materijal.Include(m => m.VrstaMaterijala).ToListAsync();
-
-        public async Task<Materijal?> GetByIdAsync(int id)
-            => await _context.Materijal.Include(m => m.VrstaMaterijala).FirstOrDefaultAsync(m => m.MaterijalId == id);
-
-        public async Task CreateAsync(Materijal materijal)
+        public async Task<List<MaterijalDto>> GetAllAsync()
         {
-            if (materijal.TrenutnaKolicina < materijal.MinimalnaKolicina)
+            var materijali = await _context.Materijal.Include(m => m.VrstaMaterijala).ToListAsync();
+
+            return materijali.Select(m => new MaterijalDto
+            {
+                MaterijalId = m.MaterijalId,
+                Naziv = m.Naziv,
+                Cijena = m.Cijena,
+                MinimalnaKolicina = m.MinimalnaKolicina,
+                TrenutnaKolicina = m.TrenutnaKolicina,
+                JedinicaMjere = m.JedinicaMjere,
+                VrstaId = m.VrstaId,
+                VrstaNaziv = m.VrstaMaterijala?.Naziv
+            }).ToList();
+        }
+
+        public async Task<MaterijalDto?> GetByIdAsync(int id)
+        {
+            var m = await _context.Materijal.Include(m => m.VrstaMaterijala)
+                                            .FirstOrDefaultAsync(m => m.MaterijalId == id);
+            if (m == null) return null;
+
+            return new MaterijalDto
+            {
+                MaterijalId = m.MaterijalId,
+                Naziv = m.Naziv,
+                Cijena = m.Cijena,
+                MinimalnaKolicina = m.MinimalnaKolicina,
+                TrenutnaKolicina = m.TrenutnaKolicina,
+                JedinicaMjere = m.JedinicaMjere,
+                VrstaId = m.VrstaId,
+                VrstaNaziv = m.VrstaMaterijala?.Naziv
+            };
+        }
+
+        public async Task CreateAsync(MaterijalDto dto)
+        {
+            if (dto.TrenutnaKolicina < dto.MinimalnaKolicina)
                 throw new ArgumentException("Trenutna količina ne smije biti manja od minimalne.");
+
+            var materijal = new Materijal
+            {
+                Naziv = dto.Naziv,
+                Cijena = dto.Cijena,
+                MinimalnaKolicina = dto.MinimalnaKolicina,
+                TrenutnaKolicina = dto.TrenutnaKolicina,
+                JedinicaMjere = dto.JedinicaMjere,
+                VrstaId = dto.VrstaId
+            };
 
             _context.Materijal.Add(materijal);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Materijal materijal)
+        public async Task UpdateAsync(MaterijalDto dto)
         {
-            if (materijal.TrenutnaKolicina < materijal.MinimalnaKolicina)
+            if (dto.TrenutnaKolicina < dto.MinimalnaKolicina)
                 throw new ArgumentException("Trenutna količina ne smije biti manja od minimalne.");
+
+            var materijal = await _context.Materijal.FindAsync(dto.MaterijalId);
+            if (materijal == null)
+                throw new ArgumentException("Materijal ne postoji.");
+
+            materijal.Naziv = dto.Naziv;
+            materijal.Cijena = dto.Cijena;
+            materijal.MinimalnaKolicina = dto.MinimalnaKolicina;
+            materijal.TrenutnaKolicina = dto.TrenutnaKolicina;
+            materijal.JedinicaMjere = dto.JedinicaMjere;
+            materijal.VrstaId = dto.VrstaId;
 
             _context.Materijal.Update(materijal);
             await _context.SaveChangesAsync();

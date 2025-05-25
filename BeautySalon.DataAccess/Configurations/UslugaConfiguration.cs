@@ -13,9 +13,15 @@ namespace BeautySalon.DataAccess.Configurations
     {
         public void Configure(EntityTypeBuilder<Usluga> builder)
         {
+            builder.ToTable("USLUGA");
             builder.HasKey(u => u.UslugaId);
+
+            builder.Property(v => v.UslugaId).HasColumnName("usluga_id");
+            builder.Property(v => v.Naziv).HasColumnName("naziv");
+            builder.Property(v => v.Opis).HasColumnName("opis");
+            builder.Property(v => v.Cijena).HasColumnName("cijena");
+            builder.Property(v => v.Trajanje).HasColumnName("trajanje");
             builder.Property(u => u.Naziv).IsRequired().HasMaxLength(100);
-            builder.Property(u => u.Cijena).HasColumnType("numeric(10, 2)");
         }
     }
 }
